@@ -12,13 +12,16 @@ from operator import itemgetter
 from colorama import Fore as Color
 from colorama import init as coloramainit
 
+import rimworld_configuration
+
 coloramainit(autoreset=True)
 
-modsconfigfile = "C:/Users/pulaski/AppData/LocalLow/Ludeon Studios/RimWorld by Ludeon Studios/Config/ModsConfig.xml"
+if rimworld_configuration.__detect_rimworld() == "":
+    print("no valid RimWorld installation detected!")
+    sys.exit(1)
 
 mod_unknown = list()
 scoring_table = dict()
-
 
 def load_mod_data(basedir, modsource):
     mod_details = dict()
@@ -52,6 +55,7 @@ score_db = "testdata/db_modscoring.json"
 if not os.path.isfile(score_db):
     print("could not load db scoring table.")
     sys.exit(1)
+
 with open(score_db, 'r', encoding='UTF-8') as scoringfile:
     scoring_table = json.loads(scoringfile.read())
 scoringfile.close()
@@ -59,8 +63,8 @@ print('Number of Mods registered in DB : ' + Color.LIGHTCYAN_EX + '{}'.format(le
 print('Last DB updated date : ' + Color.LIGHTGREEN_EX + '{}'.format(scoring_table['time']))
 print("")
 
-# fixme: proper reading and parsing of ModsConfig
-print("Loading and parsing ModConfig.xml")
+modsconfigfile = rimworld_configuration.get_modsconfigfile()
+print("Loading and parsing ModsConfig.xml")
 if not os.path.isfile(modsconfigfile):
     print("could not find " + modsconfigfile)
     sys.exit(1)
@@ -72,8 +76,18 @@ if not "Core" in mods_enabled_list:
 
 # check auf unknown mods
 print("loading mod data.")
-mod_data_workshop = load_mod_data('D:/Spiele/Steam/steamapps/workshop/content/294100', "W")
-mod_data_local = load_mod_data("D:/Spiele/Steam/steamapps/common/RimWorld/Mods", "L")
+mod_data_workshop = dict()
+mod_data_local = dict()
+
+steamworkshopdir = rimworld_configuration.get_mods_steamworkshop_dir()
+localmoddir = rimworld_configuration.get_mods_local_dir()
+
+if steamworkshopdir != "":
+    mod_data_workshop = load_mod_data(steamworkshopdir, "W")
+mod_data_local = load_mod_data(localmoddir, "L")
+
+# mod_data_workshop = load_mod_data('D:/Spiele/Steam/steamapps/workshop/content/294100', "W")
+# mod_data_local = load_mod_data("D:/Spiele/Steam/steamapps/common/RimWorld/Mods", "L")
 mod_data_full = {**mod_data_local, **mod_data_workshop}
 
 mods_data_active = list()
@@ -93,8 +107,7 @@ print("{} subscribed mods, {} ({} known, {} unknown) enabled mods".format(len(mo
 # do backup
 now_time = time.strftime('%Y%m%d-%H%M', time.localtime(time.time()))
 shutil.copy(modsconfigfile, modsconfigfile + '.backup-{}'.format(now_time))
-# write configuration
-print("writing ModConfig.xml.")
+
 if not os.path.isfile(modsconfigfile):
     print("error accessing " + modsconfigfile)
     sys.exit(1)
@@ -116,9 +129,24 @@ for mods in newlist:
         xml_sorted.text = str(mods[0])
     # ET.dump(doc)
 
-### create
-
-
 ### finish
 # enable it to write ModConfig, actually.
-# doc.write(modsconfigfile, encoding='UTF-8', xml_declaration='False')
+# write configuration
+print("writing ModConfig.xml.")
+doc.write(modsconfigfile, encoding='UTF-8', xml_declaration='False')
+
+DB = dict()
+# DB['time'] = '"' + str(time.ctime()) + '"'
+DB['time'] = str(time.ctime())
+print("")
+print("list of unknown mods:")
+for mods in mod_unknown:
+    print("- {}".format(mods))
+    DB[mods] = "1.0"
+print("")
+print("writing unknown mods to rwms_unknown_mods.json")
+print("you have to fix scoring though")
+
+with open("rws_unknown_mods_{}.json".format(now_time), "w", encoding="UTF-8", newline="\n") as f:
+    json.dump(DB, f, indent=True, sort_keys=False)
+f.close()
