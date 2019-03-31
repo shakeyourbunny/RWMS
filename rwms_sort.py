@@ -13,6 +13,7 @@ from colorama import Fore as Color
 from colorama import init as coloramainit
 
 import rimworld_configuration
+import rwms_database
 
 coloramainit(autoreset=True)
 
@@ -20,8 +21,10 @@ if rimworld_configuration.__detect_rimworld() == "":
     print("no valid RimWorld installation detected!")
     sys.exit(1)
 
+database_url = "https://gitlab.com/rwms/rwmsdb/raw/master/rwmsdb.json"
+database_file = "rwms_database.json"
+
 mod_unknown = list()
-scoring_table = dict()
 
 def load_mod_data(basedir, modsource):
     mod_details = dict()
@@ -33,7 +36,7 @@ def load_mod_data(basedir, modsource):
             name = xml.find('name').text
 
             try:
-                mod_entry = [moddirs, float(scoring_table[name]), name, modsource]
+                mod_entry = [moddirs, float(database[name]), name, modsource]
 
             except KeyError:
                 mod_unknown.append(name)
@@ -56,11 +59,14 @@ if not os.path.isfile(score_db):
     print("could not load db scoring table.")
     sys.exit(1)
 
-with open(score_db, 'r', encoding='UTF-8') as scoringfile:
-    scoring_table = json.loads(scoringfile.read())
-scoringfile.close()
-print('Number of Mods registered in DB : ' + Color.LIGHTCYAN_EX + '{}'.format(len(scoring_table)))
-print('Last DB updated date : ' + Color.LIGHTGREEN_EX + '{}'.format(scoring_table['time']))
+rwms_database.download_database(database_url, database_file)
+database = rwms_database.load_database(database_file)
+if not database:
+    print("Error loading scoring database {}.".format(score_db))
+    sys.exit(1)
+
+print('Number of Mods registered in DB : ' + Color.LIGHTCYAN_EX + '{}'.format(len(database)))
+print('Last DB updated date : ' + Color.LIGHTGREEN_EX + '{}'.format(database['time']))
 print("")
 
 modsconfigfile = rimworld_configuration.get_modsconfigfile()
