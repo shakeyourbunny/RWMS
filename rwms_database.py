@@ -46,3 +46,28 @@ def load_database(filename):
     dbfile.close()
 
     return db
+
+
+# load category mappings to
+def load_categories_mapping(url):
+    categories = dict()
+
+    if url == "":
+        print("no categories URL given!")
+        sys.exit(1)
+
+    try:
+        with urlopen(url) as jsonurl:
+            jsondata = jsonurl.read()
+    except:
+        print("could not open {}".format(url))
+        sys.exit(1)
+    jsonurl.close()
+
+    try:
+        categories = json.loads(jsondata)
+    except:
+        print("error parsing loaded jsondata from categories URL.")
+        sys.exit(1)
+
+    return categories

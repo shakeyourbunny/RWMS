@@ -1,6 +1,5 @@
-# Byte-compiled / optimized / DLL files
-__pycache__/
-*.py[cod]
-*$py.class
 .idea/
+__pycache__
 testdata/
+rws_unknown_mods_*
+rwms_database.json

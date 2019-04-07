@@ -9,24 +9,26 @@ import time
 import xml.etree.ElementTree as ET
 from operator import itemgetter
 
-from colorama import Fore as Color
-from colorama import init as coloramainit
-
 import rimworld_configuration
 import rwms_database
 
-coloramainit(autoreset=True)
+######################################################################################################################
+# some basic initialization
 
 if rimworld_configuration.__detect_rimworld() == "":
     print("no valid RimWorld installation detected!")
     sys.exit(1)
 
+categories_url = 'https://gitlab.com/rwms/rwmsdb/raw/master/rwms_db_categories.json'
 database_url = "https://gitlab.com/rwms/rwmsdb/raw/master/rwmsdb.json"
 database_file = "rwms_database.json"
 
 mod_unknown = list()
 
-def load_mod_data(basedir, modsource):
+
+######################################################################################################################
+# functions - read in mod data
+def load_mod_data(cats, db, basedir, modsource):
     mod_details = dict()
     folderlist = os.listdir(basedir)
     for moddirs in folderlist:
@@ -35,13 +37,25 @@ def load_mod_data(basedir, modsource):
             xml = ET.parse(aboutxml)
             name = xml.find('name').text
 
-            try:
-                mod_entry = [moddirs, float(database[name]), name, modsource]
+            if name in db:
+                try:
+                    score = cats[db[name]][0]
+                except:
+                    print("FIXME: mod '{}' has an unknown category '{}'. stop.".format(name, db[name]))
+                    print("please report this error to the database maintainer.")
+                    sys.exit(1)
 
-            except KeyError:
+                # print("mod {} has a score of {}".format(name, score))
+                try:
+                    mod_entry = [moddirs, float(score), name, modsource]
+
+                except KeyError:
+                    print("could not construct dictionary entry for mod {}, score {}".format(name, score))
+                    sys.exit(1)
+            else:
+                # print("mod {} is not in database, adding to unknown list.".format(name))
                 mod_unknown.append(name)
                 mod_entry = list()
-                # print("unknown mod "+str(name))
 
             if mod_entry:
                 mod_details[moddirs] = mod_entry
@@ -51,22 +65,31 @@ def load_mod_data(basedir, modsource):
     return mod_details
 
 
-# Lists
-# fixme: proper loading mechanism
-# load scoring table
+######################################################################################################################
+# real start of the script
+
+# load scoring mapping dict
+cat = rwms_database.load_categories_mapping(categories_url)
+if not cat:
+    print("Could not load properly categories.")
+    sys.exit(1)
+
+# preload all needed data
+# categories
 score_db = "testdata/db_modscoring.json"
 if not os.path.isfile(score_db):
     print("could not load db scoring table.")
     sys.exit(1)
 
+# load the mod database
 rwms_database.download_database(database_url, database_file)
 database = rwms_database.load_database(database_file)
 if not database:
     print("Error loading scoring database {}.".format(score_db))
     sys.exit(1)
 
-print('Number of Mods registered in DB : ' + Color.LIGHTCYAN_EX + '{}'.format(len(database)))
-print('Last DB updated date : ' + Color.LIGHTGREEN_EX + '{}'.format(database['time']))
+print('Number of Mods registered in DB : {}'.format(len(database) - 2))
+print('Last DB updated date : {}'.format(database['_db_time']))
 print("")
 
 modsconfigfile = rimworld_configuration.get_modsconfigfile()
@@ -89,11 +112,9 @@ steamworkshopdir = rimworld_configuration.get_mods_steamworkshop_dir()
 localmoddir = rimworld_configuration.get_mods_local_dir()
 
 if steamworkshopdir != "":
-    mod_data_workshop = load_mod_data(steamworkshopdir, "W")
-mod_data_local = load_mod_data(localmoddir, "L")
+    mod_data_workshop = load_mod_data(cat, database, steamworkshopdir, "W")
+mod_data_local = load_mod_data(cat, database, localmoddir, "L")
 
-# mod_data_workshop = load_mod_data('D:/Spiele/Steam/steamapps/workshop/content/294100', "W")
-# mod_data_local = load_mod_data("D:/Spiele/Steam/steamapps/common/RimWorld/Mods", "L")
 mod_data_full = {**mod_data_local, **mod_data_workshop}
 
 mods_data_active = list()
@@ -139,20 +160,24 @@ for mods in newlist:
 # enable it to write ModConfig, actually.
 # write configuration
 print("writing ModConfig.xml.")
-doc.write(modsconfigfile, encoding='UTF-8', xml_declaration='False')
+# FIXME: enable next line for writing modsconfig.xml for real
+# doc.write(modsconfigfile, encoding='UTF-8', xml_declaration='False')
 
-DB = dict()
-# DB['time'] = '"' + str(time.ctime()) + '"'
-DB['time'] = str(time.ctime())
-print("")
-print("list of unknown mods:")
-for mods in mod_unknown:
-    print("- {}".format(mods))
-    DB[mods] = "1.0"
-print("")
-print("writing unknown mods to rwms_unknown_mods.json")
-print("you have to fix scoring though")
+if mod_unknown:
+    DB = dict()
+    DB['time'] = str(time.ctime())
+    print("")
+    print("list of unknown mods:")
+    for mods in mod_unknown:
+        print("- {}".format(mods))
+        DB[mods] = "not_categorized"
+    print("")
+    print("writing unknown mods to rwms_unknown_mods.json")
+    print("you have to fix scoring though")
 
-with open("rws_unknown_mods_{}.json".format(now_time), "w", encoding="UTF-8", newline="\n") as f:
-    json.dump(DB, f, indent=True, sort_keys=False)
-f.close()
+    with open("rws_unknown_mods_{}.json".format(now_time), "w", encoding="UTF-8", newline="\n") as f:
+        json.dump(DB, f, indent=True, sort_keys=True)
+    f.close()
+else:
+    print("lucky, no unknown mods detected!")
+print("finished.")
