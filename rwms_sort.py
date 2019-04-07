@@ -157,12 +157,7 @@ for mods in newlist:
     # ET.dump(doc)
 
 ### finish
-# enable it to write ModConfig, actually.
-# write configuration
-print("writing ModConfig.xml.")
-# FIXME: enable next line for writing modsconfig.xml for real
-# doc.write(modsconfigfile, encoding='UTF-8', xml_declaration='False')
-
+write_modsconfig = False
 if mod_unknown:
     DB = dict()
     DB['time'] = str(time.ctime())
@@ -172,12 +167,27 @@ if mod_unknown:
         print("- {}".format(mods))
         DB[mods] = "not_categorized"
     print("")
-    print("writing unknown mods to rwms_unknown_mods.json")
-    print("you have to fix scoring though")
-
-    with open("rws_unknown_mods_{}.json".format(now_time), "w", encoding="UTF-8", newline="\n") as f:
+    unknownfile = "rwms_unknown_mods_{}.json".format(now_time)
+    print("writing unknown mods to {}. Please submit this file to https://gitlab.com/rwms/rwmsdb/issues".format(
+        unknownfile))
+    with open(unknownfile, "w", encoding="UTF-8", newline="\n") as f:
         json.dump(DB, f, indent=True, sort_keys=True)
     f.close()
+
+    while True:
+        data = input("Do you REALLY want to write ModsConfig.xml (unknown mods are removed from loading) (y/n): ")
+        if data.lower() in ('y', 'n'):
+            break
+
+    if data.lower() == 'y':
+        write_modsconfig = True
 else:
     print("lucky, no unknown mods detected!")
-print("finished.")
+    write_modsconfig = False
+
+if write_modsconfig:
+    print("Writing new ModsConfig.xml.")
+    doc.write(modsconfigfile, encoding='UTF-8', xml_declaration='False')
+    print("Writing done.")
+else:
+    print("ModsConfig.xml was NOT modified.")
