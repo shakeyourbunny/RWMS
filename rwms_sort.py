@@ -183,7 +183,7 @@ if mod_unknown:
         write_modsconfig = True
 else:
     print("lucky, no unknown mods detected!")
-    write_modsconfig = False
+    write_modsconfig = True
 
 if write_modsconfig:
     print("Writing new ModsConfig.xml.")
