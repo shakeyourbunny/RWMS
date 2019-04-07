@@ -78,6 +78,27 @@ Arch Linux / Manjaro | repo | pacman -S python (should already be installed)
 Download https://gitlab.com/rwms/rwms/-/archive/master/rwms-master.zip and decompress it in a 
 folder of your liking. 
 
+## Configuration file
+The configuration file *rwms_config.ini* is only needed if the autodetection fails (or on other 
+platforms than Windows / Steam). Just open the configuration in your favorite text editor (NOT
+Microsoft Word) and you can modify all paths there. 
+
+There are no default values, you have to fill them in for yourself.
+
+entry | description
+--- | ---
+steamdir | path to your steam installation (not the game itself).
+drmfreedir | path to your DRM-free RimWorld game installation, not used for a steam installation (and vice versa).
+configdir | path to the main RimWorld configuration directory in your user profile.
+workshopdir | path to your RimWorld steam workshop directory (ends with the steam appid). 
+localmodsdir | path to your locally installed RimWorld mods in the RimWorld game directory (ends with Mods).
+
+You may have to use quotes, if the path has spaces in it and always provide the full path. 
+
+NB: you always can check your (detected) configuration with
+> python rwms_configuration.py
+
+in your shell (Windows Command Line, Linux shell)
 ## History
 See https://gitlab.com/rwms/rwms/commits/master
 

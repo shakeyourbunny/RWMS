@@ -1,6 +1,7 @@
 # RimWorld configuration file
 #
 # enter here your correct paths
+import configparser
 import os
 import sys
 
@@ -8,9 +9,31 @@ if sys.platform == "win32":
     import winreg
 
 
+## do not use directly
+def __load_value_from_config(entry):
+    configfile = os.path.dirname(__file__) + "/rwms_config.ini"
+    if not os.path.isfile(configfile):
+        return ""
+
+    cfg = configparser.ConfigParser()
+    try:
+        cfg.read(configfile)
+    except:
+        print("Error reading configuration file {}.".format(configfile))
+        sys.exit(1)
+
+    try:
+        value = cfg.get("rwms", entry, raw=True)
+    except:
+        print("Error reading entry {} from configuration file {}".format(entry, configfile))
+        sys.exit(1)
+
+    return value
+
+
 # "internal" detection routines, do not use outside of module
 def __detect_rimworld_steam():
-    steampath = ""
+    steampath = __load_value_from_config("steamdir")
     key = None
 
     # TODO: implement Steam detection on other platforms than Windows.
@@ -29,14 +52,17 @@ def __detect_rimworld_steam():
 
 
 def __detect_rimworld_local():
-    # TODO: implement detect DRM free RimWorld.
-    return ""
+    # TODO: implement automatic detection of DRM free RimWorld.
+    drmfreepath = __load_value_from_config("drmfreedir")
+    return drmfreepath
 
 
 def __detect_rimworld():
     path = __detect_rimworld_steam()
     if path == "":
         path = __detect_rimworld_local()
+
+    # sanity check
     if not os.path.isdir(path):
         return ""
     else:
@@ -54,6 +80,10 @@ def __detect_rimworld_configdir():
     elif sys.platform == "darwin":
         rimworld_configdir = os.environ["HOME"] + "Library/Application Support/RimWorld/Config"
 
+    # fallback to configuration file
+    if not os.path.isdir(rimworld_configdir):
+        rimworld_configdir = __load_value_from_config("configdir")
+
     return rimworld_configdir
 
 
@@ -61,7 +91,10 @@ def __detect_rimworld_configdir():
 def get_mods_steamworkshop_dir():
     modsdir = __detect_rimworld_steam() + "/steamapps/workshop/content/294100"
     if not os.path.isdir(modsdir):
-        return ""
+        modsdir = __load_value_from_config("workshopdir")
+        if not os.path.isdir(modsdir):
+            modsdir = ""
+
     return modsdir
 
 
@@ -76,10 +109,14 @@ def get_mods_local_dir():
         # TODO: implement correct DRM free detection, need DRM free build
         if drmfreepath != "":
             modsdir = drmfreepath + "/Mods"
+
     if not os.path.isdir(modsdir):
-        return ""
-    else:
-        return modsdir
+        # fallback to configuration file
+        modsdir = __load_value_from_config("modslocaldir")
+        if not os.path.isdir(modsdir):
+            modsdir = ""
+
+    return modsdir
 
 
 def get_modsconfigfile():
