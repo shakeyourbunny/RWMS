@@ -76,16 +76,10 @@ if not cat:
 
 # preload all needed data
 # categories
-score_db = "testdata/db_modscoring.json"
-if not os.path.isfile(score_db):
-    print("could not load db scoring table.")
-    sys.exit(1)
-
-# load the mod database
 rwms_database.download_database(database_url, database_file)
 database = rwms_database.load_database(database_file)
 if not database:
-    print("Error loading scoring database {}.".format(score_db))
+    print("Error loading scoring database {}.".format(database_file))
     sys.exit(1)
 
 print('Number of Mods registered in DB : {}'.format(len(database) - 2))
