@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 # RimWorld Module Sorter
-
+import collections
 import json
 import os
 import shutil
@@ -14,6 +14,12 @@ import rwms_database
 
 ######################################################################################################################
 # some basic initialization
+VERSION = "0.90"
+print("*** RWMS {} by shakeyourbunny".format(VERSION))
+print("visit https://gitlab.com/rwms/rwms/issues for reporting problems,")
+print("visit https://gitlab.com/rwms/rwmsdb/issues for uploading potential unknown mods.")
+print("   please use the generated .json file.")
+print("")
 
 if rimworld_configuration.__detect_rimworld() == "":
     print("no valid RimWorld installation detected!")
@@ -28,6 +34,11 @@ mod_unknown = list()
 
 ######################################################################################################################
 # functions - read in mod data
+#
+# cats       = categories
+# db         = FULL db dict
+# modsource  = type of mod installation
+#
 def load_mod_data(cats, db, basedir, modsource):
     mod_details = dict()
     folderlist = os.listdir(basedir)
@@ -37,11 +48,11 @@ def load_mod_data(cats, db, basedir, modsource):
             xml = ET.parse(aboutxml)
             name = xml.find('name').text
 
-            if name in db:
+            if name in db["db"]:
                 try:
-                    score = cats[db[name]][0]
+                    score = cats[db["db"][name]][0]
                 except:
-                    print("FIXME: mod '{}' has an unknown category '{}'. stop.".format(name, db[name]))
+                    print("FIXME: mod '{}' has an unknown category '{}'. stop.".format(name, db["db"][name]))
                     print("please report this error to the database maintainer.")
                     sys.exit(1)
 
@@ -60,7 +71,7 @@ def load_mod_data(cats, db, basedir, modsource):
             if mod_entry:
                 mod_details[moddirs] = mod_entry
         else:
-            print("could not find metadata for item " + moddirs + " (skipping)!")
+            print("could not find metadata for item " + moddirs + " (skipping, is probably a scenario)!")
             name = ""
     return mod_details
 
@@ -81,10 +92,18 @@ database = rwms_database.load_database(database_file)
 if not database:
     print("Error loading scoring database {}.".format(database_file))
     sys.exit(1)
+else:
+    print("")
+    print("Database (structure v{}, last update {}) successfully loaded.".format(database["version"],
+                                                                                 database["timestamp"]))
+    print("{} known mods, {} contributors.".format(len(database["db"]), len(database["contributor"])))
+    contributors = collections.Counter(database["contributor"])
+    print("Top contributors: ", end='')
+    for c in contributors.most_common(5):
+        print("{} ({}), ".format(c[0], c[1]), end='')
+    print("")
+    print("")
 
-print('Number of Mods registered in DB : {}'.format(len(database) - 2))
-print('Last DB updated date : {}'.format(database['_db_time']))
-print("")
 
 modsconfigfile = rimworld_configuration.get_modsconfigfile()
 print("Loading and parsing ModsConfig.xml")
@@ -98,7 +117,8 @@ if not "Core" in mods_enabled_list:
     mods_enabled_list.append("Core")
 
 # check auf unknown mods
-print("loading mod data.")
+print("")
+print("Loading mod data.")
 mod_data_workshop = dict()
 mod_data_local = dict()
 
@@ -120,11 +140,12 @@ for mods in mods_enabled_list:
         pass
         # print("Unknown mod ID {}, deactivating it from mod list.".format(mods))
 
+print("")
 print("sorting mods.")
 newlist = sorted(mods_data_active, key=itemgetter(1))
 print("")
 print("{} subscribed mods, {} ({} known, {} unknown) enabled mods".format(len(mod_data_full), len(mods_enabled_list),
-                                                                          len(mods_data_active), len(mod_unknown)))
+                                                                          len(mods_data_active) + 1, len(mod_unknown)))
 # do backup
 now_time = time.strftime('%Y%m%d-%H%M', time.localtime(time.time()))
 shutil.copy(modsconfigfile, modsconfigfile + '.backup-{}'.format(now_time))
