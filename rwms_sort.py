@@ -14,7 +14,7 @@ import rwms_database
 
 ######################################################################################################################
 # some basic initialization
-VERSION = "0.90"
+VERSION = "0.91"
 print("*** RWMS {} by shakeyourbunny".format(VERSION))
 print("visit https://gitlab.com/rwms/rwms/issues for reporting problems,")
 print("visit https://gitlab.com/rwms/rwmsdb/issues for uploading potential unknown mods.")
@@ -108,7 +108,7 @@ else:
 modsconfigfile = rimworld_configuration.get_modsconfigfile()
 print("Loading and parsing ModsConfig.xml")
 if not os.path.isfile(modsconfigfile):
-    print("could not find " + modsconfigfile)
+    print("** error, could not find ModsConfig.xml; detected: '{}'".format(modsconfigfile))
     sys.exit(1)
 xml = ET.parse(modsconfigfile)
 xml = xml.find('activeMods')
@@ -125,8 +125,19 @@ mod_data_local = dict()
 steamworkshopdir = rimworld_configuration.get_mods_steamworkshop_dir()
 localmoddir = rimworld_configuration.get_mods_local_dir()
 
-if steamworkshopdir != "":
+if rimworld_configuration.__detect_rimworld_steam() != "":
+    if not os.path.isdir(steamworkshopdir):
+        print(
+            "** error, steam workshop directory '{}' could not be found. please check your installation and / or configuration file.".format(
+                steamworkshopdir))
+        sys.exit(1)
     mod_data_workshop = load_mod_data(cat, database, steamworkshopdir, "W")
+
+if not os.path.isdir(localmoddir):
+    print(
+        "** error, local mod directory '{}' could not be found. please check your installation and / or configuration file.".format(
+            steamworkshopdir))
+    sys.exit(1)
 mod_data_local = load_mod_data(cat, database, localmoddir, "L")
 
 mod_data_full = {**mod_data_local, **mod_data_workshop}
