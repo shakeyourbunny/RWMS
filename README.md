@@ -73,6 +73,9 @@ Fedora (recent) | repo | sudo dnf install python37
 CentOS 7 | repo | sudo yum install centos-release-scl && sudo yum install rh-python36
 Arch Linux / Manjaro | repo | pacman -S python (should already be installed)
 
+After this, please install the BeautifulSoup python module (Windows and Linux)
+
+>pip install bs4
 
 ### RWMS installation
 Download https://gitlab.com/rwms/rwms/-/archive/master/rwms-master.zip and decompress it in a 

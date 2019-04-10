@@ -8,13 +8,16 @@ import sys
 import time
 import xml.etree.ElementTree as ET
 from operator import itemgetter
+from urllib.request import urlopen
+
+from bs4 import BeautifulSoup
 
 import rimworld_configuration
 import rwms_database
 
 ######################################################################################################################
 # some basic initialization
-VERSION = "0.91"
+VERSION = "0.92"
 print("*** RWMS {} by shakeyourbunny".format(VERSION))
 print("visit https://gitlab.com/rwms/rwms/issues for reporting problems,")
 print("visit https://gitlab.com/rwms/rwmsdb/issues for uploading potential unknown mods.")
@@ -42,11 +45,35 @@ mod_unknown = list()
 def load_mod_data(cats, db, basedir, modsource):
     mod_details = dict()
     folderlist = os.listdir(basedir)
+    name = str()
     for moddirs in folderlist:
         aboutxml = basedir + '/' + moddirs + "/About/About.xml"
         if os.path.isfile(aboutxml):
-            xml = ET.parse(aboutxml)
-            name = xml.find('name').text
+            try:
+                xml = ET.parse(aboutxml)
+                name = xml.find('name').text
+            except ET.ParseError as pe:
+                print("Mod ID is '{}'".format(moddirs))
+                print("** error: malformed XML in {}".format(aboutxml))
+                # print("Line {}, Offset {}".format(pe.lineno, pe.offset))
+                print("")
+                print("Please contact mod author for clarification.")
+                if rimworld_configuration.__detect_rimworld_steam():
+                    workshopurl = "https://steamcommunity.com/sharedfiles/filedetails/?id=" + moddirs
+                    print("(trying to workaround by loading steamworkshop page {})".format(workshopurl))
+                    try:
+                        name = str(BeautifulSoup(urlopen(workshopurl), "html.parser").title.string)
+                        if 'Steam Community :: Error' in name:
+                            print("Could not find a matching mod on the workshop.")
+                            sys.exit(1)
+                    except:
+                        print("Could not open workshop page. sorry.")
+                    name = name.replace('Steam Workshop :: ', '')
+                    print("Matching mod ID '{}' with '{}'".format(moddirs, name))
+                    print("")
+                else:
+                    print("(cannot do a workaround, no steam installation)")
+                    sys.exit(1)
 
             if name in db["db"]:
                 try:
@@ -103,7 +130,6 @@ else:
         print("{} ({}), ".format(c[0], c[1]), end='')
     print("")
     print("")
-
 
 modsconfigfile = rimworld_configuration.get_modsconfigfile()
 print("Loading and parsing ModsConfig.xml")
