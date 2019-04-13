@@ -10,13 +10,14 @@ version_url = "https://raw.githubusercontent.com/shakeyourbunny/RWMS/master/VERS
 
 def __load_version_from_repo():
     try:
-        data = str(urlopen(version_url).readline())
+        data = urlopen(version_url)
 
     except:
         print("** updatecheck: could not load update URL.")
         sys.exit(1)
 
-    return data
+    version = data.read().decode('utf-8').strip()
+    return version
 
 
 def is_update_available(currentversion):
