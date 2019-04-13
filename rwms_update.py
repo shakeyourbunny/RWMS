@@ -5,7 +5,7 @@
 import sys
 from urllib.request import urlopen
 
-version_url = "https://gitlab.com/rwms/rwms/raw/master/VERSION"
+version_url = "https://raw.githubusercontent.com/shakeyourbunny/RWMS/master/VERSION"
 
 
 def __load_version_from_repo():
