@@ -6,6 +6,7 @@ RWMS (RimWorldModSorter) changelog:
 - added some slowdowns (issue #6)
 - windows executable ignores configuration file (issue #7)
 - added configurable keypress on error and exit
+- project moved back to GitHub, it doesn't like JSON as extension...
 
 0.92 (2019-04-10):
 - fallback to steam workshop, if About.xml of mod has errors

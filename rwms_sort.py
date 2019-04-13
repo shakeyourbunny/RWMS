@@ -246,7 +246,7 @@ if mod_unknown:
         print("- {}".format(mods))
         DB[mods] = "not_categorized"
     print("")
-    unknownfile = "rwms_unknown_mods_{}.json".format(now_time)
+    unknownfile = "rwms_unknown_mods_{}.json.txt".format(now_time)
     print("writing unknown mods to {}. Please submit this file to https://gitlab.com/rwms/rwmsdb/issues".format(
         unknownfile))
     with open(unknownfile, "w", encoding="UTF-8", newline="\n") as f:
