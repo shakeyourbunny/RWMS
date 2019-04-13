@@ -4,6 +4,8 @@ Homepage: https://gitlab.com/rwms/rwms
 
 Issues: https://gitlab.com/rwms/rwms/issues (for database contribution: https://gitlab.com/rwms/rwmsdb/issues)
 
+Windows executable: https://my.pcloud.com/publink/show?code=kZMpDE7Z6AR7dk8n8ibLB8EIhSPYU51E7xhX
+
 Discussion thread on Ludeon: tbd
 
 ## Description
@@ -51,6 +53,8 @@ You need a Python 3.6+ installation on your computer. This script does not work 
 Python 3 distributions less then 3.6. This script does not need extra Python modules.
 
 #### Windows
+Windows All-In-One executable: https://my.pcloud.com/publink/show?code=kZMpDE7Z6AR7dk8n8ibLB8EIhSPYU51E7xhX
+
 Go to https://www.python.org/downloads/ and click on the big yellow "Download Python 3.7.x"
 button, let the installer run and let Python be added to the search path.
 

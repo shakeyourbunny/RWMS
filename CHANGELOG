@@ -1,0 +1,26 @@
+RWMS (RimWorldModSorter) changelog:
+
+0.93 (2019-04-13):
+- configurable disabling steam check (fixes issue 4)
+- update version check (issue #5)
+- added some slowdowns (issue #6)
+- windows executable ignores configuration file (issue #7)
+- added configurable keypress on error and exit
+
+0.92 (2019-04-10):
+- fallback to steam workshop, if About.xml of mod has errors
+
+0.91 (2019-04-09):
+- configuration file now overrides automatic detection
+- validation moved into main script
+
+0.90 (2019-04-8):
+- first version with proper version numbering
+- new DB format
+
+no particular versions:
+- initial commit, updates and fixes.
+- uses the traditional scoring system
+- fixed writing policy for ModsConfig.xml
+- added configuration file (is ignored, if values are autodetected)
+- removed dead testing code which prevented running

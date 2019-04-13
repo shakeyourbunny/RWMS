@@ -10,8 +10,21 @@ if sys.platform == "win32":
 
 
 ## do not use directly
-def __load_value_from_config(entry):
-    configfile = os.path.dirname(__file__) + "/rwms_config.ini"
+def __get_configfile():
+    # check, if script is compiled with pyinstaller
+    mypath = str()
+
+    if getattr(sys, 'frozen', False):
+        mypath = os.path.dirname(sys.executable)
+    elif __file__:
+        mypath = os.path.dirname(__file__)
+
+    return os.path.join(mypath, "rwms_config.ini")
+
+
+def __load_value_from_config(entry, isBool=False):
+    configfile = __get_configfile()
+
     if not os.path.isfile(configfile):
         return ""
 
@@ -23,7 +36,10 @@ def __load_value_from_config(entry):
         sys.exit(1)
 
     try:
-        value = cfg.get("rwms", entry, raw=True)
+        if isBool:
+            value = cfg.getboolean("rwms", entry)
+        else:
+            value = cfg.get("rwms", entry, raw=True)
     except:
         print("Error reading entry {} from configuration file {}".format(entry, configfile))
         sys.exit(1)
@@ -33,6 +49,10 @@ def __load_value_from_config(entry):
 
 # "internal" detection routines, do not use outside of module
 def __detect_rimworld_steam():
+    disablesteam = __load_value_from_config("disablesteam", True)
+    if disablesteam:
+        return ""
+
     steampath = __load_value_from_config("steamdir")
     key = None
 
@@ -83,6 +103,9 @@ def __detect_rimworld_configdir():
 
 # directory detection routines
 def get_mods_steamworkshop_dir():
+    if __load_value_from_config("disablesteam", True):
+        return ""
+
     modsdir = __load_value_from_config("workshopdir")
 
     if modsdir == "":
@@ -113,6 +136,24 @@ def get_modsconfigfile():
 
 # debug
 if __name__ == '__main__':
+    configfile = os.path.dirname(__file__) + "/rwms_config.ini"
+    print("pyinstaller configuration")
+    frozen = 'not'
+    if getattr(sys, 'frozen', False):
+        # we are running in a bundle
+        frozen = 'ever so'
+        bundle_dir = sys._MEIPASS
+    else:
+        # we are running in a normal Python environment
+        bundle_dir = os.path.dirname(os.path.abspath(__file__))
+    print('we are', frozen, 'frozen')
+    print('bundle dir is', bundle_dir)
+    print('sys.argv[0] is', sys.argv[0])
+    print('sys.executable is', sys.executable)
+    print('os.getcwd is', os.getcwd())
+    print("")
+    print("configuration file is {}".format(__get_configfile()))
+    print("")
     print("Current OS agnostic configuration")
     if __detect_rimworld_steam() != "":
         print("")
@@ -124,5 +165,13 @@ if __name__ == '__main__':
     print("RimWorld steam workshop folder ..: " + get_mods_steamworkshop_dir())
 
     print("RimWorld ModsConfig.xml .........: " + get_modsconfigfile())
+    print("")
+    print("Disable Steam Checks ............: {}".format(__load_value_from_config("disablesteam")))
+    print("Updatecheck .....................: {}".format(__load_value_from_config("updatecheck")))
+    print("Open Browser on Update ..........: {}".format(__load_value_from_config("openbrowser_on_update")))
+    print("Wait on Error ...................: {}".format(__load_value_from_config("waitforkeypress_on_error")))
+    print("Wait on Exit ....................: {}".format(__load_value_from_config("waitforkeypress_on_exit")))
 
+    print("")
+    input("Press ENTER to end program.")
     pass
