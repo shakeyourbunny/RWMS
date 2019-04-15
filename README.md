@@ -1,12 +1,11 @@
 # RWMS - RimWorld Mod Sorter
 #### Links
-Homepage: https://gitlab.com/rwms/rwms 
+Homepage: https://github.com/shakeyourbunny/RWMS 
+Download: https://github.com/shakeyourbunny/RWMS/releases
 
-Issues: https://gitlab.com/rwms/rwms/issues (for database contribution: https://gitlab.com/rwms/rwmsdb/issues)
+Windows executable is available on the release page.
 
-Windows executable: https://my.pcloud.com/publink/show?code=kZMpDE7Z6AR7dk8n8ibLB8EIhSPYU51E7xhX
-
-Discussion thread on Ludeon: tbd
+Discussion thread on Ludeon: https://ludeon.com/forums/index.php?topic=48518.0
 
 ## Description
 
@@ -18,10 +17,8 @@ Managing mods ((un)subscribing, mod load lists etc) is beyond the scope of this 
 is a better ingame solution called "Mod Manager" by Fluffy. The only thing it does, is optimizing
 the mod load order.
 
-For using the script you need an active internet connection which will connect to Gitlab, where
+For using the script you need an active internet connection which will connect to Github, where
 the current sort order database resides.
-
-Descripton of the database see https://gitlab.com/rwms/rwmsdb/blob/master/README.md
 
 ## Usage
 
@@ -42,9 +39,9 @@ or (Linux)
 
 There should be no interactions (except writing ModsConfig.xml if you have unknown mods).
 
-If some mods are unknown, the script will generate a *rws_unknown_mods_YYYYmmdd-HHMM.json* file,
+If some mods are unknown, the script will generate a *rws_unknown_mods_YYYYmmdd-HHMM.json.txt* file,
 where all unknown mods are listed. Please submit this file in the forum thread or in the sister
-project, RWMSDB on https://gitlab.com/rwms/rwmsdb/issues  
+project, RWMSDB on https://github.com/shakeyourbunny/RWMSDB/issues  
 
 ## Installation
 ### Python 3.6+
@@ -53,7 +50,9 @@ You need a Python 3.6+ installation on your computer. This script does not work 
 Python 3 distributions less then 3.6. This script does not need extra Python modules.
 
 #### Windows
-Windows All-In-One executable: https://my.pcloud.com/publink/show?code=kZMpDE7Z6AR7dk8n8ibLB8EIhSPYU51E7xhX
+Windows binary downloads are available on the release page. 
+
+If you wish to use the source directly, see below.
 
 Go to https://www.python.org/downloads/ and click on the big yellow "Download Python 3.7.x"
 button, let the installer run and let Python be added to the search path.
@@ -82,7 +81,7 @@ After this, please install the BeautifulSoup python module (Windows and Linux)
 >pip install bs4
 
 ### RWMS installation
-Download https://gitlab.com/rwms/rwms/-/archive/master/rwms-master.zip and decompress it in a 
+Download https://github.com/shakeyourbunny/RWMS/archive/master.zip and decompress it in a 
 folder of your liking. 
 
 ## Configuration file
@@ -107,10 +106,7 @@ NB: you always can check your (detected) configuration with
 
 in your shell (Windows Command Line, Linux shell)
 ## History
-See https://gitlab.com/rwms/rwms/commits/master
-
-This script is written from scratch and shares no code with the "other" RimWorld mod 
-sorter by zzz465. My script also has its own, incompatible scoring system.
+See https://github.com/shakeyourbunny/RWMS/blob/master/CHANGELOG
 
 ## License
 Script written by shakeyourbunny <shakeyourbunny@gmail.com> 

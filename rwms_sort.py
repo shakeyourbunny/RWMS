@@ -25,11 +25,11 @@ def errormsg(wait, msg):
 ####################################
 # ##################################################################################
 # some basic initialization
-VERSION = "0.93"
+VERSION = "0.93.1"
 
 print("*** RWMS {} by shakeyourbunny".format(VERSION))
-print("visit https://gitlab.com/rwms/rwms/issues for reporting problems,")
-print("visit https://gitlab.com/rwms/rwmsdb/issues for uploading potential unknown mods.")
+print("visit https://github.com/shakeyourbunny/RWMS/issues for reporting problems,")
+print("visit https://github.com/shakeyourbunny/RWMSDB/issues for uploading potential unknown mods.")
 print("   please use the generated .json file.")
 print("")
 
@@ -43,8 +43,7 @@ if updatecheck:
     if rwms_update.is_update_available(VERSION):
         print("*** Update available, new version is {} ***".format(rwms_update.__load_version_from_repo()))
         print("")
-        print("Release: https://gitlab.com/rwms/rwms/tags")
-        print("Windows:  https://my.pcloud.com/publink/show?code=kZMpDE7Z6AR7dk8n8ibLB8EIhSPYU51E7xhX")
+        print("Release: https://github.com/shakeyourbunny/RWMS/releases")
         print("")
     # time.sleep(1)
 
@@ -52,8 +51,8 @@ if rimworld_configuration.__detect_rimworld() == "":
     print("no valid RimWorld installation detected!")
     sys.exit(1)
 
-categories_url = 'https://gitlab.com/rwms/rwmsdb/raw/master/rwms_db_categories.json'
-database_url = "https://gitlab.com/rwms/rwmsdb/raw/master/rwmsdb.json"
+categories_url = 'https://raw.githubusercontent.com/shakeyourbunny/RWMSDB/master/rwms_db_categories.json'
+database_url = "https://raw.githubusercontent.com/shakeyourbunny/RWMSDB/master/rwmsdb.json"
 database_file = "rwms_database.json"
 
 mod_unknown = list()
@@ -247,7 +246,7 @@ if mod_unknown:
         DB[mods] = "not_categorized"
     print("")
     unknownfile = "rwms_unknown_mods_{}.json.txt".format(now_time)
-    print("writing unknown mods to {}. Please submit this file to https://gitlab.com/rwms/rwmsdb/issues".format(
+    print("writing unknown mods to {}. Please submit this file to https://github.com/shakeyourbunny/RWMS/issues".format(
         unknownfile))
     with open(unknownfile, "w", encoding="UTF-8", newline="\n") as f:
         json.dump(DB, f, indent=True, sort_keys=True)

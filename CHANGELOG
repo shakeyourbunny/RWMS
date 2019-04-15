@@ -1,5 +1,8 @@
 RWMS (RimWorldModSorter) changelog:
 
+0.93.1 (2019-04-15):
+- minor update, correct URLs and references from Gitlab to Github
+
 0.93 (2019-04-13):
 - configurable disabling steam check (fixes issue 4)
 - update version check (issue #5)
