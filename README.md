@@ -1,9 +1,14 @@
 # RWMS - RimWorld Mod Sorter
+
+[Download](https://www.github.com/releases) (includes Windows executable)
+
+![version](https://img.shields.io/github/release/shakeyourbunny/RWMS.svg?style=plastic "version")
+[![Date Latest](https://img.shields.io/github/release-date/shakeyourbunny/RWMS.svg?style=plastic)](https://github.com/shakeyourbunny/RWMS/releases/latest)
+[![Commits Since Latest](https://img.shields.io/github/commits-since/shakeyourbunny/RWMS/latest.svg?style=plastic)](https://github.com/shakeyourbunny/RWMS/commits/master)
+![version](https://img.shields.io/github/downloads/shakeyourbunny/RWMS/total.svg?style=plastic "version")
+
 #### Links
 Homepage: https://github.com/shakeyourbunny/RWMS 
-Download: https://github.com/shakeyourbunny/RWMS/releases
-
-Windows executable is available on the release page.
 
 Discussion thread on Ludeon: https://ludeon.com/forums/index.php?topic=48518.0
 
