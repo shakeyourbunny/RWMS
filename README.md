@@ -113,6 +113,9 @@ in your shell (Windows Command Line, Linux shell)
 ## History
 See https://github.com/shakeyourbunny/RWMS/blob/master/CHANGELOG
 
+## Contributors
+see https://github.com/shakeyourbunny/RWMS/blob/master/CONTRIBUTORS.md
+
 ## License
 Script written by shakeyourbunny <shakeyourbunny@gmail.com> 
 

@@ -1,5 +1,9 @@
 RWMS (RimWorldModSorter) changelog:
 
+0.93.2 (2019-04-23):
+- pretty up README.md
+- added contribution breakdown with "contributors" command line argument.
+
 0.93.1 (2019-04-15):
 - minor update, correct URLs and references from Gitlab to Github
 

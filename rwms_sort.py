@@ -25,7 +25,7 @@ def errormsg(wait, msg):
 ####################################
 # ##################################################################################
 # some basic initialization
-VERSION = "0.93.1"
+VERSION = "0.93.2"
 
 print("*** RWMS {} by shakeyourbunny".format(VERSION))
 print("visit https://github.com/shakeyourbunny/RWMS/issues for reporting problems,")
@@ -147,13 +147,25 @@ else:
     print("Database (structure v{}, last update {}) successfully loaded.".format(database["version"],
                                                                                  database["timestamp"]))
     print("{} known mods, {} contributors.".format(len(database["db"]), len(database["contributor"])))
+    print("")
+
+if len(sys.argv) > 1 and sys.argv[1] == "contributors":
+    print("{:<30} {:<6}".format('Contributor', '# Mods'))
+    d = sorted(database["contributor"].items(), key=itemgetter(1), reverse=True)
+    for contributors in d:
+        if contributors[1] >= 10:
+            print("{:<30} {:>5}".format(contributors[0], contributors[1]))
+    if wait_on_exit:
+        print("")
+        input("Press ENTER to close the program.")
+    sys.exit(0)
+else:
     contributors = collections.Counter(database["contributor"])
     print("Top contributors: ", end='')
     for c in contributors.most_common(5):
         print("{} ({}), ".format(c[0], c[1]), end='')
     print("")
-    print("")
-time.sleep(3)
+    time.sleep(2)
 
 modsconfigfile = rimworld_configuration.get_modsconfigfile()
 print("Loading and parsing ModsConfig.xml")
