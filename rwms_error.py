@@ -4,7 +4,7 @@
 import sys
 
 
-def fatal_error(wait, message):
+def fatal_error(message, wait=True):
     print("*** fatal error: {}".format(message))
     print("")
     if wait:

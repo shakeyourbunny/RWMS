@@ -1,49 +1,35 @@
 # RimWorld database handling stuff
 import json
-import os
 import sys
 from urllib.request import urlopen
 
+import rimworld_configuration
+import rwms_error
+
+wait_on_error = rimworld_configuration.__load_value_from_config("waitforkeypress_on_error", True)
 
 # download most recent DB
-def download_database(url, filename):
+def download_database(url):
     print("loading current RWMS database.")
     if url == "":
-        print("no database URL defined.")
-        sys.exit(1)
-    if filename == "":
-        print("no filename to download defined.")
+        rwms_error.fatal_error("no database URL defined.", wait_on_error)
         sys.exit(1)
 
     try:
         with urlopen(url) as jsonurl:
             jsondata = jsonurl.read()
     except:
-        print("could not open {}".format(url))
+        rwms_error.fatal_error("could not open {}".format(url), wait_on_error)
         sys.exit(1)
     jsonurl.close()
 
-    try:
-        with open(filename, 'wb') as dbfile:
-            dbfile.write(jsondata)
-    except:
-        print("could not write database data to {}".format(filename))
-        sys.exit(1)
-    dbfile.close()
-
-
-# load database to memory
-def load_database(filename):
     db = dict()
-    if not os.path.isfile(filename):
-        print("RWMS database {} not readable or found!".format(filename))
-
-    with open(filename, 'r', encoding='UTF-8') as dbfile:
+    if jsondata:
         try:
-            db = json.loads(dbfile.read())
+            db = json.loads(jsondata)
         except:
-            print("Could not load data from {}.".format(filename))
-    dbfile.close()
+            rwms_error.fatal_error("Could not load data from RWMSDB repository.", wait_on_error)
+            sys.exit(1)
 
     return db
 
@@ -53,21 +39,21 @@ def load_categories_mapping(url):
     categories = dict()
 
     if url == "":
-        print("no categories URL given!")
+        rwms_error.fatal_error("no categories URL given!", wait_on_error)
         sys.exit(1)
 
     try:
         with urlopen(url) as jsonurl:
             jsondata = jsonurl.read()
     except:
-        print("could not open {}".format(url))
+        rwms_error.fatal_error("could not open {}".format(url), wait_on_error)
         sys.exit(1)
     jsonurl.close()
 
     try:
         categories = json.loads(jsondata)
     except:
-        print("error parsing loaded jsondata from categories URL.")
+        rwms_error.fatal_error("error parsing loaded jsondata from categories URL.", wait_on_error)
         sys.exit(1)
 
     return categories

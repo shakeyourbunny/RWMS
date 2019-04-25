@@ -42,11 +42,17 @@ or (Linux)
 
 > rwms_sort.sh
 
-There should be no interactions (except writing ModsConfig.xml if you have unknown mods).
+There should be no interactions if not desired (except writing ModsConfig.xml if 
+you have unknown mods).
 
 If some mods are unknown, the script will generate a *rws_unknown_mods_YYYYmmdd-HHMM.json.txt* file,
 where all unknown mods are listed. Please submit this file in the forum thread or in the sister
 project, RWMSDB on https://github.com/shakeyourbunny/RWMSDB/issues  
+
+## Upgrading
+It is recommended that you do a clean installation, but you can copy over your 
+rwms_config.ini in the new directory, but do not forget to check this documentation for
+new (or changed) settings.
 
 ## Installation
 ### Python 3.6+
@@ -86,14 +92,15 @@ After this, please install the BeautifulSoup python module (Windows and Linux)
 >pip install bs4
 
 ### RWMS installation
-Download https://github.com/shakeyourbunny/RWMS/archive/master.zip and decompress it in a 
-folder of your liking. 
+Download the source distribution from the releases page and unzip it in a 
+folder of your liking. Alternatively, you can also clone the repository.
 
 ## Configuration file
 The configuration file *rwms_config.ini* is only needed if the autodetection fails (or on other 
 platforms than Windows / Steam). Just open the configuration in your favorite text editor (NOT
 Microsoft Word) and you can modify all paths there. 
 
+### General options
 There are no default values, you have to fill them in for yourself.
 
 entry | description
@@ -106,10 +113,41 @@ localmodsdir | path to your locally installed RimWorld mods in the RimWorld game
 
 You may have to use quotes, if the path has spaces in it and always provide the full path. 
 
-NB: you always can check your (detected) configuration with
+Additional parameters control if you want to enable the update check, waiting for keypresses and
+optional automatic submitting unknown mods to the database issue tracker.
+
+NB: you always can check your (detected) folder configuration with
 > python rwms_configuration.py
 
 in your shell (Windows Command Line, Linux shell)
+
+### Update Check
+entry | default value | description
+--- | --- | ---
+updatecheck | True | tells RWMS either to check for new updates or not. This is just a version check, no autoupdate.
+openbrowser_on_update | False | opens a new (default) web browser window with the RWMS page, if a newer version is available.
+
+### Interactive and misc options
+These are the default options on waiting for keypresses etc.
+
+entry | default value | description
+--- | --- | ---
+waitforkeypress_on_error | True | wait for a keypress / Enter after an error occurs.
+waitforkeypress_on_exit | True | wait for a keypress / Enter to exit the program.
+
+entry | default value | description
+--- | --- | ---
+disablesteam | False | ignore any steam installations or related stuff
+
+### GitHub submission options
+If you want your unknown mods automatically submitted as an issue, please configure these 
+settings. They are fully optional.
+
+entry | default value | description
+--- | --- | ---
+github_username | - | user name on GitHub
+github_password | - | your GitHub password
+
 ## History
 See https://github.com/shakeyourbunny/RWMS/blob/master/CHANGELOG
 

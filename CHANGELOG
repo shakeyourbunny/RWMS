@@ -1,34 +1,77 @@
 RWMS (RimWorldModSorter) changelog:
 
+
+0.94.0 (2019-04-25):
+new:
+- automatic issue creation, if you put in your Github credentials in the configuration file.
+
+changed:
+- reworked output on the command line, now leaner, less scroll and (hopefully) more informative.
+- updated documentation, especially the configuration file
+- reworked changelog (you are reading this)
+
+fixed:
+- several fatal errors did not honor the waitforkeypress_on_error in the configuration file.
+
+Note that I am aware that there is also a token / OAuth system available for the GitHub API, but I could
+not get it to work with just having access to issues. If you have a workable solution (in Python 3), please
+contact me.
+
+
 0.93.2 (2019-04-23):
-- pretty up README.md
+new:
 - added contribution breakdown with "contributors" command line argument.
 
+changed:
+- pretty up README.md
+
+
 0.93.1 (2019-04-15):
+changed:
 - minor update, correct URLs and references from Gitlab to Github
 
+
 0.93 (2019-04-13):
-- configurable disabling steam check (fixes issue 4)
-- update version check (issue #5)
-- added some slowdowns (issue #6)
-- windows executable ignores configuration file (issue #7)
+new:
 - added configurable keypress on error and exit
+- update version check (issue #5)
+
+changed:
+- added some slowdowns (issue #6)
 - project moved back to GitHub, it doesn't like JSON as extension...
 
+fixed:
+- configurable disabling steam check (fixes issue 4)
+- windows executable ignores configuration file (issue #7)
+
+
 0.92 (2019-04-10):
+fixed:
 - fallback to steam workshop, if About.xml of mod has errors
 
+
 0.91 (2019-04-09):
+new:
 - configuration file now overrides automatic detection
+
+changed:
 - validation moved into main script
 
+
 0.90 (2019-04-8):
+new:
 - first version with proper version numbering
 - new DB format
 
+
 no particular versions:
+new:
 - initial commit, updates and fixes.
 - uses the traditional scoring system
+
+changed:
+- removed dead testing code which prevented running
+
+fixed:
 - fixed writing policy for ModsConfig.xml
 - added configuration file (is ignored, if values are autodetected)
-- removed dead testing code which prevented running
