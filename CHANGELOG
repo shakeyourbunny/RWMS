@@ -9,6 +9,7 @@ changed:
 - reworked output on the command line, now leaner, less scroll and (hopefully) more informative.
 - updated documentation, especially the configuration file
 - reworked changelog (you are reading this)
+- (2019-04-26) documentation changes regarding module requirements, nothing new to the code itself.
 
 fixed:
 - several fatal errors did not honor the waitforkeypress_on_error in the configuration file.

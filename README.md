@@ -58,7 +58,7 @@ new (or changed) settings.
 ### Python 3.6+
 
 You need a Python 3.6+ installation on your computer. This script does not work with Python 2 or
-Python 3 distributions less then 3.6. This script does not need extra Python modules.
+Python 3 distributions less then 3.6.
 
 #### Windows
 Windows binary downloads are available on the release page. 
@@ -69,8 +69,8 @@ Go to https://www.python.org/downloads/ and click on the big yellow "Download Py
 button, let the installer run and let Python be added to the search path.
 
 After that you can start directly python (.py) files from the explorer, but I recommend using the 
-batch file rwms_sort.bat, because the python script does not wait after execution and there will
-just be some window flashing up due its nature of being a command-line program.
+batch file rwms_sort.bat. Default behaviour of RWMS is now that it will wait after a fatal error
+and after it is finished. This may be changed through the configuration file, though.
 
 #### Linux distributions
 Many distributions still have Python 2 as system default and RWMS is a pure Python 3 script; I did
