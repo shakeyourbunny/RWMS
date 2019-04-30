@@ -109,7 +109,7 @@ def load_mod_data(cats, db, basedir, modsource):
                         "could not construct dictionary entry for mod {}, score {}".format(name, score), wait_on_error)
                     sys.exit(1)
             else:
-                # print("mod {} is not in database, adding to unknown list.".format(name))
+                # print("mod '{}' is not in database, adding to unknown list.".format(name))
                 mod_unknown.append(name)
                 mod_entry = list()
 
