@@ -245,6 +245,8 @@ if mod_unknown:
     DB = dict()
     DB['time'] = str(time.ctime())
     DB["_contributor"] = rwms_issue_mgmt.__get_github_user()
+    DB["_unknown"] = len(mod_unknown)
+    DB["_known"] = len(mods_data_active) + 1
 
     for mods in mod_unknown:
         DB[mods] = "not_categorized"
