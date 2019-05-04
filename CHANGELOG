@@ -1,5 +1,9 @@
 RWMS (RimWorldModSorter) changelog:
 
+0.94.2 (2019-05-04):
+modified:
+- changed unknown data file format slightly for easier processing.
+
 0.94.1 (2019-05-04):
 new:
 - asks if script may open a new browser window to RWMSDB issues tracker if unknown mods are detected.

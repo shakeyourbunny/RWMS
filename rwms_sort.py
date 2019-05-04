@@ -22,7 +22,7 @@ import rwms_update
 
 # ##################################################################################
 # some basic initialization
-VERSION = "0.94.1"
+VERSION = "0.94.2"
 
 twx, twy = shutil.get_terminal_size()
 
@@ -249,8 +249,8 @@ if mod_unknown:
     print("Processing unknown mods.")
     time.sleep(3)
     DB = dict()
+    DB["version"] = 2
 
-    DB["_version"] = 2
     unknown_meta = dict()
     unknown_meta["contributor"] = rwms_issue_mgmt.__get_github_user().split("@")[0]
     unknown_meta["mods_unknown"] = len(mod_unknown)
@@ -259,14 +259,16 @@ if mod_unknown:
     unknown_meta["rwms_version"] = VERSION
     unknown_meta["os"] = sys.platform
     unknown_meta["time"] = str(time.ctime())
-    DB["_meta"] = unknown_meta
+    DB["meta"] = unknown_meta
 
+    unknown_diff = dict()
     for mods in mod_unknown:
         if not disablesteam:
             workshop_url = "https://steamcommunity.com/sharedfiles/filedetails/?id={}".format(mods[1])
         else:
             workshop_url = ""
-        DB[mods[0]] = ["not_categorized", workshop_url]
+        unknown_diff[mods[0]] = ["not_categorized", workshop_url]
+    DB["unknown"] = unknown_diff
 
     unknownfile = "rwms_unknown_mods_{}.json.txt".format(now_time)
     print("Writing unknown mods.")
