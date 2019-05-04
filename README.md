@@ -12,6 +12,25 @@ Homepage: https://github.com/shakeyourbunny/RWMS
 
 Discussion thread on Ludeon: https://ludeon.com/forums/index.php?topic=48518.0
 
+## Table of contents
+   * [Description](#description)
+   * [Usage](#usage)
+      * [Upgrading](#upgrading)
+   * [Installation](#installation)
+      * [Python 3.6 ](#python-36)
+         * [Windows](#windows)
+         * [Linux distributions](#linux-distributions)
+      * [RWMS installation](#rwms-installation)
+   * [Configuration file](#configuration-file)
+      * [General options](#general-options)
+      * [Update Check](#update-check)
+      * [Interactive and misc options](#interactive-and-misc-options)
+      * [GitHub submission options](#github-submission-options)
+   * [Notes on the unknown mods file](#notes-on-the-unknown-mods-file)
+   * [History](#history)
+   * [Contributors](#contributors)
+   * [License](#license)
+
 ## Description
 
 This Python script sorts your ModConfigs.xml (RimWorld mod configuration) for better loading time 
@@ -147,6 +166,48 @@ entry | default value | description
 --- | --- | ---
 github_username | - | user name on GitHub
 github_password | - | your GitHub password
+
+## Notes on the unknown mods file
+If RWMS finds any unknown mods, they will be recorded on a rwms_unknown_mods_YYYYMMDD-HHMM.json.txt
+file in the current working directory. This file may be submitted to the RWMSDB Github tracker or
+will be automatically, if GitHub user credentials (see above) are provided. 
+
+This data file includes the names of all unknown mods, timestamp of generation of the file and
+(beginning with 0.94.1) some meta information about the installation: operating system, RimWorld
+build number, type of operating system environment (Windows/Linux/OSX) and a version number. The 
+latter describes the version of the data structure format and is used for merge tool for  the 
+database in order to parse the file correctly.
+
+#### datafile format history
+##### original datafile version
+included:
+- timestamp
+- list of unknown mods
+
+##### original datafile version, revision 1
+added:
+- contributor name
+
+##### original datafile version, revision 2 (0.94.0)
+modified:
+- contributor name: is autofilled with github user name
+
+##### original datafile version,  revision 3 (0.94.1 pre-release)
+added:
+- number of unknown mods
+
+##### datafile version v2 (0.94.1) 
+added:
+- datafile version number
+- number of known mods
+- operating system platform (win32, darwin, linux
+- RimWorld build number
+- RWMS version
+
+modified:
+- unknown mod entries now include steam workshop url, if steam detection is not disabled 
+(disablesteam = False in configuration file)
+- meta information has now its own category section in the datafile
 
 ## History
 See https://github.com/shakeyourbunny/RWMS/blob/master/CHANGELOG

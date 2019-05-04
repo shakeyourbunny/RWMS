@@ -1,5 +1,23 @@
 RWMS (RimWorldModSorter) changelog:
 
+0.94.1 (2019-05-04):
+new:
+- asks if script may open a new browser window to RWMSDB issues tracker if unknown mods are detected.
+- table of contents in documentation.
+- added documentation about contents of the unknown data file which is generated for submission.
+
+modified:
+- reworked data format for unknown mods file, now has versioning, some meta information about installation
+  and Steam Workshop links to mods if steam support is not disabled. Reason for including this meta information
+  is relieving me from the guesswork of the installation I'm already doing if I have to pinpoint bugs.
+- reworked script output wording and flow a bit.
+- automatically sanitize contributor name, if an email address is provided. I already did this manually in the
+  unknown mod submissions.
+
+Concerning the inclusion of the operating system metadata in the unknown mods file:
+This will only include the output of the Python "sys.platform" call, which will produce "darwin", "win32" or "linux".
+Please refer to the documentation page https://docs.python.org/3.7/library/sys.html#sys.platform for more details.
+If I need more platform-specific details, I will ask directly in the issue / forum.
 
 0.94.0 (2019-04-25):
 new:

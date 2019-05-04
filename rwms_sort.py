@@ -7,6 +7,7 @@ import shutil
 import sys
 import textwrap
 import time
+import webbrowser
 import xml.etree.ElementTree as ET
 from operator import itemgetter
 from urllib.request import urlopen
@@ -21,11 +22,14 @@ import rwms_update
 
 # ##################################################################################
 # some basic initialization
-VERSION = "0.94.0"
+VERSION = "0.94.1"
 
-print("*** RWMS {} by shakeyourbunny".format(VERSION))
-print("visit https://github.com/shakeyourbunny/RWMS/issues for reporting problems,")
-print("visit https://github.com/shakeyourbunny/RWMSDB/issues for uploading potential unknown mods.")
+twx, twy = shutil.get_terminal_size()
+
+banner = "** RWMS {} by shakeyourbunny ".format(VERSION)
+print("{:*<{tw}}".format(banner, tw=twx))
+print("bugs: https://github.com/shakeyourbunny/RWMS/issues")
+print("database updates: visit https://github.com/shakeyourbunny/RWMSDB/issues")
 print("")
 
 updatecheck = rimworld_configuration.__load_value_from_config("updatecheck", True)
@@ -77,7 +81,7 @@ def load_mod_data(cats, db, basedir, modsource):
                 print("Please contact mod author for clarification.")
                 if rimworld_configuration.__detect_rimworld_steam():
                     workshopurl = "https://steamcommunity.com/sharedfiles/filedetails/?id=" + moddirs
-                    print("(trying to workaround by loading steamworkshop page {})".format(workshopurl))
+                    print("(trying to workaround by loading steam workshop page {})".format(workshopurl))
                     try:
                         name = str(BeautifulSoup(urlopen(workshopurl), "html.parser").title.string)
                         if 'Steam Community :: Error' in name:
@@ -110,7 +114,8 @@ def load_mod_data(cats, db, basedir, modsource):
                     sys.exit(1)
             else:
                 # print("mod '{}' is not in database, adding to unknown list.".format(name))
-                mod_unknown.append(name)
+                # mod_unknown.append(name)
+                mod_unknown.append([name, moddirs])
                 mod_entry = list()
 
             if mod_entry:
@@ -138,7 +143,7 @@ if not database:
     sys.exit(1)
 else:
     print("")
-    print("Database (structure v{}, last update {}) successfully loaded.".format(database["version"],
+    print("Database (v{}, date: {}) successfully loaded.".format(database["version"],
                                                                                  database["timestamp"]))
     print("{} known mods, {} contributors.".format(len(database["db"]), len(database["contributor"])))
 
@@ -221,10 +226,10 @@ if not os.path.isfile(modsconfigfile):
     sys.exit(1)
 doc = ET.parse(modsconfigfile)
 xml = doc.getroot()
+rimworld_version = xml.find('version').text
 xml = xml.find('activeMods')
 for li in xml.findall('li'):
     xml.remove(li)
-
 # ET.dump(doc)
 
 xml_sorted = ET.SubElement(xml, 'li')
@@ -240,19 +245,32 @@ for mods in newlist:
 ### finish -- unknown mods handling
 write_modsconfig = False
 if mod_unknown:
-    print("* Processing unknown mods *")
+    print("")
+    print("Processing unknown mods.")
     time.sleep(3)
     DB = dict()
-    DB['time'] = str(time.ctime())
-    DB["_contributor"] = rwms_issue_mgmt.__get_github_user()
-    DB["_unknown"] = len(mod_unknown)
-    DB["_known"] = len(mods_data_active) + 1
+
+    DB["_version"] = 2
+    unknown_meta = dict()
+    unknown_meta["contributor"] = rwms_issue_mgmt.__get_github_user().split("@")[0]
+    unknown_meta["mods_unknown"] = len(mod_unknown)
+    unknown_meta["mods_known"] = len(mods_data_active) + 1
+    unknown_meta["rimworld_version"] = rimworld_version
+    unknown_meta["rwms_version"] = VERSION
+    unknown_meta["os"] = sys.platform
+    unknown_meta["time"] = str(time.ctime())
+    DB["_meta"] = unknown_meta
 
     for mods in mod_unknown:
-        DB[mods] = "not_categorized"
-    print("")
+        if not disablesteam:
+            workshop_url = "https://steamcommunity.com/sharedfiles/filedetails/?id={}".format(mods[1])
+        else:
+            workshop_url = ""
+        DB[mods[0]] = ["not_categorized", workshop_url]
+
     unknownfile = "rwms_unknown_mods_{}.json.txt".format(now_time)
     print("Writing unknown mods.")
+    print("")
     with open(unknownfile, "w", encoding="UTF-8", newline="\n") as f:
         json.dump(DB, f, indent=True, sort_keys=True)
     f.close()
@@ -270,6 +288,15 @@ if mod_unknown:
         print("")
         print("Data file name is {}".format(unknownfile))
         print("")
+
+        while True:
+            data = input("Do you want to open the RWMSDB issues web page in your default browser (y/n): ")
+            if data.lower() in ('y', 'n'):
+                break
+        if data.lower() == "y":
+            print("Trying to open the default webbrowser for RWMSDB issues page.")
+            print("")
+            webbrowser.open_new("https://www.github.com/shakeyourbunny/RWMSDB/issues")
 
     # ask for confirmation to write the ModsConfig.xml anyway
     while True:

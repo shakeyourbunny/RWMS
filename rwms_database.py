@@ -10,7 +10,7 @@ wait_on_error = rimworld_configuration.__load_value_from_config("waitforkeypress
 
 # download most recent DB
 def download_database(url):
-    print("loading current RWMS database.")
+    print("loading database.")
     if url == "":
         rwms_error.fatal_error("no database URL defined.", wait_on_error)
         sys.exit(1)
