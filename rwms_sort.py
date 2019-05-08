@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python
 # RimWorld Module Sorter
 import collections
 import json
@@ -9,6 +9,7 @@ import textwrap
 import time
 import webbrowser
 import xml.etree.ElementTree as ET
+from argparse import ArgumentParser
 from operator import itemgetter
 from urllib.request import urlopen
 
@@ -22,9 +23,20 @@ import rwms_update
 
 # ##################################################################################
 # some basic initialization
-VERSION = "0.94.2"
+VERSION = "0.94.3"
 
 twx, twy = shutil.get_terminal_size()
+
+parser = ArgumentParser()
+
+# configuration overrides
+parser.add_argument("--disable-steam", action="store_true", help="force disable steam detection")
+parser.add_argument("--dont-remove-unknown-mods", action="store_true", help="do not remove unknown mods")
+
+# misc options
+parser.add_argument("--contributors", action="store_true", help="display all contributors to RWMS(DB)")
+parser.add_argument("--reset-to-core", action="store_true", help="reset mod list to Core only")
+args = parser.parse_args()
 
 banner = "** RWMS {} by shakeyourbunny ".format(VERSION)
 print("{:*<{tw}}".format(banner, tw=twx))
@@ -37,6 +49,14 @@ openbrowser_on_update = rimworld_configuration.__load_value_from_config("openbro
 wait_on_error = rimworld_configuration.__load_value_from_config("waitforkeypress_on_error", True)
 wait_on_exit = rimworld_configuration.__load_value_from_config("waitforkeypress_on_exit", True)
 disablesteam = rimworld_configuration.__load_value_from_config("disablesteam", True)
+dontremoveunknown = rimworld_configuration.__load_value_from_config("dontremoveunknown", False)
+
+# command line switches, override configuration file
+if args.disable_steam:
+    disablesteam = True
+
+if args.dont_remove_unknown_mods:
+    dontremoveunknown = True
 
 if updatecheck:
     if rwms_update.is_update_available(VERSION):
@@ -44,7 +64,9 @@ if updatecheck:
         print("")
         print("Release: https://github.com/shakeyourbunny/RWMS/releases")
         print("")
-    # time.sleep(1)
+        if openbrowser_on_update:
+            webbrowser.open_new("https://www.github.com/shakeyourbunny/RWMS/releases")
+
 
 if rimworld_configuration.__detect_rimworld() == "":
     rwms_error.fatal_error("no valid RimWorld installation detected!", wait_on_error)
@@ -147,7 +169,8 @@ else:
                                                                                  database["timestamp"]))
     print("{} known mods, {} contributors.".format(len(database["db"]), len(database["contributor"])))
 
-if len(sys.argv) > 1 and sys.argv[1] == "contributors":
+# if len(sys.argv) > 1 and sys.argv[1] == "contributors":
+if args.contributors:
     print("{:<30} {:<6}".format('Contributor', '# Mods'))
     d = sorted(database["contributor"].items(), key=itemgetter(1), reverse=True)
     for contributors in d:
@@ -163,7 +186,6 @@ else:
     for c in contributors.most_common(5):
         print("{} ({}), ".format(c[0], c[1]), end='')
     print("")
-    time.sleep(1)
 
 modsconfigfile = rimworld_configuration.get_modsconfigfile()
 print("")
@@ -211,7 +233,6 @@ for mods in mods_enabled_list:
         pass
         # print("Unknown mod ID {}, deactivating it from mod list.".format(mods))
 
-time.sleep(1)
 print("Sorting mods.")
 newlist = sorted(mods_data_active, key=itemgetter(1))
 print("")
@@ -232,7 +253,23 @@ for li in xml.findall('li'):
     xml.remove(li)
 # ET.dump(doc)
 
-xml_sorted = ET.SubElement(xml, 'li')
+if args.reset_to_core:
+    while True:
+        data = input("Do you want to reset your mod list to Core only (y/n)? ")
+        if data.lower() in ('y', 'n'):
+            break
+    if data.lower() == "y":
+        print("Resetting your ModsConfig.xml to Core only!")
+
+        xml_sorted = ET.SubElement(xml, 'li')
+        xml_sorted.text = "Core"
+
+        doc.write(modsconfigfile, encoding='UTF-8', xml_declaration='False')
+        if wait_on_exit:
+            print("")
+            input("Press ENTER to close the program.")
+        sys.exit(1)
+
 for mods in newlist:
     # print(mods)
     if mods[0] == "":
@@ -247,7 +284,6 @@ write_modsconfig = False
 if mod_unknown:
     print("")
     print("Processing unknown mods.")
-    time.sleep(3)
     DB = dict()
     DB["version"] = 2
 
@@ -260,6 +296,15 @@ if mod_unknown:
     unknown_meta["os"] = sys.platform
     unknown_meta["time"] = str(time.ctime())
     DB["meta"] = unknown_meta
+
+    if dontremoveunknown:
+        print("Adding in unknown mods in the load order (at the bottom).")
+        for mods in mod_unknown:
+            if mods[0] == "":
+                print("skipping, empty?")
+            else:
+                xml_sorted = ET.SubElement(xml, 'li')
+                xml_sorted.text = str(mods[1])
 
     unknown_diff = dict()
     for mods in mod_unknown:
@@ -302,7 +347,12 @@ if mod_unknown:
 
     # ask for confirmation to write the ModsConfig.xml anyway
     while True:
-        data = input("Do you REALLY want to write ModsConfig.xml (unknown mods are removed from loading) (y/n): ")
+        if dontremoveunknown:
+            print("Unknown mods will be written at the end of the mod list.")
+        else:
+            print("Unknown mods will be removed.")
+
+        data = input("Do you REALLY want to write ModsConfig.xml (y/n): ")
         if data.lower() in ('y', 'n'):
             break
 
@@ -319,7 +369,6 @@ if write_modsconfig:
 else:
     print("ModsConfig.xml was NOT modified.")
 
-time.sleep(2)
 if wait_on_exit:
     print("")
     input("Press ENTER to close the program.")

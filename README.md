@@ -15,8 +15,9 @@ Discussion thread on Ludeon: https://ludeon.com/forums/index.php?topic=48518.0
 ## Table of contents
    * [Description](#description)
    * [Usage](#usage)
+      * [Command Line Options](#command-line-options)
       * [Upgrading](#upgrading)
-   * [Installation](#installation)
+     * [Installation](#installation)
       * [Python 3.6 ](#python-36)
          * [Windows](#windows)
          * [Linux distributions](#linux-distributions)
@@ -44,6 +45,18 @@ the mod load order.
 For using the script you need an active internet connection which will connect to Github, where
 the current sort order database resides.
 
+## Command Line Options
+Option | Description
+--- | ---
+--help | displays helps and valid command line arguments
+--disable-steam | force disable Steam checks
+--dont-remove-unknown-mods | do not remove unknown mods
+--contributors | list all contributors to the script and the database who have contributed more than 10 mods
+--reset-to-core | reset ModsConfig.xml to just Core
+
+Note that the switches which are named identical to the configuration options override these, so the
+priority order of options is: **default settings - configuration file - command line arguments.**
+
 ## Usage
 
 Just run the script with 
@@ -67,6 +80,8 @@ you have unknown mods).
 If some mods are unknown, the script will generate a *rws_unknown_mods_YYYYmmdd-HHMM.json.txt* file,
 where all unknown mods are listed. Please submit this file in the forum thread or in the sister
 project, RWMSDB on https://github.com/shakeyourbunny/RWMSDB/issues  
+
+##
 
 ## Upgrading
 It is recommended that you do a clean installation, but you can copy over your 
@@ -157,6 +172,7 @@ waitforkeypress_on_exit | True | wait for a keypress / Enter to exit the program
 entry | default value | description
 --- | --- | ---
 disablesteam | False | ignore any steam installations or related stuff
+dontremoveunknown | False | do not remove unknown mods from the ModsConfig.xml (and stick them at the bottom)
 
 ### GitHub submission options
 If you want your unknown mods automatically submitted as an issue, please configure these 

@@ -1,7 +1,25 @@
 RWMS (RimWorldModSorter) changelog:
 
+0.94.3 (2019-05-08:
+new:
+- new configuration option "dontremoveunknown": do not remove unknown mods (and stick them at the bottom of the list)
+- new command line parser, try --help
+- new command line option "--disable-steam", overrides same configuration file setting
+- new command line option "--dont-remove-unknown-mods", overrides same configuration file setting
+- new command line option "--reset-to-core", resets ModsConfig.xml to Core only (idea taken from Mehni's tool)
+- documentation added
+
+changed:
+- "contributors" command line option changed to "--contributors" (new parser)
+- small delays removed
+
+fixed:
+- configuration directive "openbrowser_on_update" works now
+- minor XML fix, empty li-element removed in ModsConfig.xml
+
+
 0.94.2 (2019-05-04):
-modified:
+changed:
 - changed unknown data file format slightly for easier processing.
 
 0.94.1 (2019-05-04):
@@ -10,7 +28,7 @@ new:
 - table of contents in documentation.
 - added documentation about contents of the unknown data file which is generated for submission.
 
-modified:
+changed:
 - reworked data format for unknown mods file, now has versioning, some meta information about installation
   and Steam Workshop links to mods if steam support is not disabled. Reason for including this meta information
   is relieving me from the guesswork of the installation I'm already doing if I have to pinpoint bugs.
