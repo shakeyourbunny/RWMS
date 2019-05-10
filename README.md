@@ -51,6 +51,7 @@ Option | Description
 --help | displays helps and valid command line arguments
 --disable-steam | force disable Steam checks
 --dont-remove-unknown-mods | do not remove unknown mods
+--configuration | dumps the current configuration and exits
 --contributors | list all contributors to the script and the database who have contributed more than 10 mods
 --reset-to-core | reset ModsConfig.xml to just Core
 

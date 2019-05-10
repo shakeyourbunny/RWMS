@@ -134,8 +134,7 @@ def get_modsconfigfile():
     return __detect_rimworld_configdir() + "/ModsConfig.xml"
 
 
-# debug
-if __name__ == '__main__':
+def __dump_configuration():
     configfile = os.path.dirname(__file__) + "/rwms_config.ini"
     print("pyinstaller configuration")
     frozen = 'not'
@@ -166,11 +165,21 @@ if __name__ == '__main__':
 
     print("RimWorld ModsConfig.xml .........: " + get_modsconfigfile())
     print("")
-    print("Disable Steam Checks ............: {}".format(__load_value_from_config("disablesteam")))
     print("Updatecheck .....................: {}".format(__load_value_from_config("updatecheck")))
     print("Open Browser on Update ..........: {}".format(__load_value_from_config("openbrowser_on_update")))
     print("Wait on Error ...................: {}".format(__load_value_from_config("waitforkeypress_on_error")))
     print("Wait on Exit ....................: {}".format(__load_value_from_config("waitforkeypress_on_exit")))
+    print("Disable Steam Checks ............: {}".format(__load_value_from_config("disablesteam")))
+    print("Do not remove unknown mods ......: {}".format(__load_value_from_config("dontremoveunknown")))
+    print("")
+    if __load_value_from_config("github_username"):
+        print("GitHub username .................: is set, not displaying it.")
+    if __load_value_from_config("github_password"):
+        print("GitHub password  ................: is set, not displaying it.")
+
+# debug
+if __name__ == '__main__':
+    __dump_configuration()
 
     print("")
     input("Press ENTER to end program.")

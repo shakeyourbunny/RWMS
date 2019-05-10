@@ -23,7 +23,7 @@ import rwms_update
 
 # ##################################################################################
 # some basic initialization
-VERSION = "0.94.3"
+VERSION = "0.94.4"
 
 twx, twy = shutil.get_terminal_size()
 
@@ -35,6 +35,9 @@ parser.add_argument("--dont-remove-unknown-mods", action="store_true", help="do 
 
 # misc options
 parser.add_argument("--contributors", action="store_true", help="display all contributors to RWMS(DB)")
+parser.add_argument("--dump-configuration", action="store_true",
+                    help="displays the current configuration RWMS is thinking of")
+
 parser.add_argument("--reset-to-core", action="store_true", help="reset mod list to Core only")
 args = parser.parse_args()
 
@@ -57,6 +60,13 @@ if args.disable_steam:
 
 if args.dont_remove_unknown_mods:
     dontremoveunknown = True
+
+if args.dump_configuration:
+    rimworld_configuration.__dump_configuration()
+    if wait_on_exit:
+        print("")
+        input("Press ENTER to end program.")
+        sys.exit(0)
 
 if updatecheck:
     if rwms_update.is_update_available(VERSION):

@@ -1,6 +1,11 @@
 RWMS (RimWorldModSorter) changelog:
 
-0.94.3 (2019-05-08:
+0.94.4 (2019-05-10):
+new:
+- new command line option "--dump-configuration", dumps the current configuration RWMS has itself configured,
+  same as "python rimworld_configuration.py"
+
+0.94.3 (2019-05-08):
 new:
 - new configuration option "dontremoveunknown": do not remove unknown mods (and stick them at the bottom of the list)
 - new command line parser, try --help
