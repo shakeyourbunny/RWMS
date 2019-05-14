@@ -23,7 +23,7 @@ import rwms_update
 
 # ##################################################################################
 # some basic initialization
-VERSION = "0.94.4"
+VERSION = "0.94.5"
 
 twx, twy = shutil.get_terminal_size()
 
@@ -257,7 +257,15 @@ if not os.path.isfile(modsconfigfile):
     sys.exit(1)
 doc = ET.parse(modsconfigfile)
 xml = doc.getroot()
-rimworld_version = xml.find('version').text
+
+try:
+    rimworld_version = xml.find('version').text
+except:
+    try:
+        rimworld_version = xml.find('buildNumber').text
+    except:
+        rimworld_version = "unknown"
+
 xml = xml.find('activeMods')
 for li in xml.findall('li'):
     xml.remove(li)

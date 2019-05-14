@@ -1,5 +1,9 @@
 RWMS (RimWorldModSorter) changelog:
 
+0.94.5 (2019-05-14):
+fixed:
+- RimWorld version detection in ModsConfig.xml
+
 0.94.4 (2019-05-10):
 new:
 - new command line option "--dump-configuration", dumps the current configuration RWMS has itself configured,
