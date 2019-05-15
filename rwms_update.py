@@ -5,19 +5,19 @@
 import sys
 from urllib.request import urlopen
 
-import rimworld_configuration
-import rwms_error
+import RWMS.configuration
+import RWMS.error
 
 version_url = "https://raw.githubusercontent.com/shakeyourbunny/RWMS/master/VERSION"
 
-wait_on_error = rimworld_configuration.__load_value_from_config("waitforkeypress_on_error", True)
+wait_on_error = RWMS.configuration.load_value("rwms", "waitforkeypress_on_error", True)
 
 def __load_version_from_repo():
     try:
         data = urlopen(version_url)
 
     except:
-        rwms_error.fatal_error("** updatecheck: could not load update URL.", wait_on_error)
+        RWMS.error.fatal_error("** updatecheck: could not load update URL.", wait_on_error)
         sys.exit(1)
 
     version = data.read().decode('utf-8').strip()

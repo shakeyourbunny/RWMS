@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # RimWorld Module Sorter
 import collections
 import json
@@ -15,10 +15,10 @@ from urllib.request import urlopen
 
 from bs4 import BeautifulSoup
 
-import rimworld_configuration
-import rwms_database
-import rwms_error
-import rwms_issue_mgmt
+import RWMS.configuration
+import RWMS.database
+import RWMS.error
+import RWMS.issue_mgmt
 import rwms_update
 
 # ##################################################################################
@@ -47,12 +47,12 @@ print("bugs: https://github.com/shakeyourbunny/RWMS/issues")
 print("database updates: visit https://github.com/shakeyourbunny/RWMSDB/issues")
 print("")
 
-updatecheck = rimworld_configuration.__load_value_from_config("updatecheck", True)
-openbrowser_on_update = rimworld_configuration.__load_value_from_config("openbrowser_on_update", True)
-wait_on_error = rimworld_configuration.__load_value_from_config("waitforkeypress_on_error", True)
-wait_on_exit = rimworld_configuration.__load_value_from_config("waitforkeypress_on_exit", True)
-disablesteam = rimworld_configuration.__load_value_from_config("disablesteam", True)
-dontremoveunknown = rimworld_configuration.__load_value_from_config("dontremoveunknown", False)
+updatecheck = RWMS.configuration.load_value("rwms", "updatecheck", True)
+openbrowser = RWMS.configuration.load_value("rwms", "openbrowser", True)
+wait_on_error = RWMS.configuration.load_value("rwms", "waitforkeypress_on_error", True)
+wait_on_exit = RWMS.configuration.load_value("rwms", "waitforkeypress_on_exit", True)
+disablesteam = RWMS.configuration.load_value("rwms", "disablesteam", True)
+dontremoveunknown = RWMS.configuration.load_value("rwms", "dontremoveunknown", False)
 
 # command line switches, override configuration file
 if args.disable_steam:
@@ -62,7 +62,7 @@ if args.dont_remove_unknown_mods:
     dontremoveunknown = True
 
 if args.dump_configuration:
-    rimworld_configuration.__dump_configuration()
+    RWMS.configuration.__dump_configuration()
     if wait_on_exit:
         print("")
         input("Press ENTER to end program.")
@@ -74,12 +74,11 @@ if updatecheck:
         print("")
         print("Release: https://github.com/shakeyourbunny/RWMS/releases")
         print("")
-        if openbrowser_on_update:
+        if openbrowser:
             webbrowser.open_new("https://www.github.com/shakeyourbunny/RWMS/releases")
 
-
-if rimworld_configuration.__detect_rimworld() == "":
-    rwms_error.fatal_error("no valid RimWorld installation detected!", wait_on_error)
+if RWMS.configuration.detect_rimworld() == "":
+    RWMS.error.fatal_error("no valid RimWorld installation detected!", wait_on_error)
     sys.exit(1)
 
 categories_url = 'https://raw.githubusercontent.com/shakeyourbunny/RWMSDB/master/rwms_db_categories.json'
@@ -111,13 +110,13 @@ def load_mod_data(cats, db, basedir, modsource):
                 # print("Line {}, Offset {}".format(pe.lineno, pe.offset))
                 print("")
                 print("Please contact mod author for clarification.")
-                if rimworld_configuration.__detect_rimworld_steam():
+                if RWMS.configuration.detect_rimworld_steam():
                     workshopurl = "https://steamcommunity.com/sharedfiles/filedetails/?id=" + moddirs
                     print("(trying to workaround by loading steam workshop page {})".format(workshopurl))
                     try:
                         name = str(BeautifulSoup(urlopen(workshopurl), "html.parser").title.string)
                         if 'Steam Community :: Error' in name:
-                            rwms_error.fatal_error("Could not find a matching mod on the workshop.", wait_on_error)
+                            RWMS.error.fatal_error("Could not find a matching mod on the workshop.", wait_on_error)
                             sys.exit(1)
                     except:
                         print("Could not open workshop page. sorry.")
@@ -125,7 +124,7 @@ def load_mod_data(cats, db, basedir, modsource):
                     print("Matching mod ID '{}' with '{}'".format(moddirs, name))
                     print("")
                 else:
-                    rwms_error.fatal_error("(cannot do a workaround, no steam installation)", wait_on_error)
+                    RWMS.error.fatal_error("(cannot do a workaround, no steam installation)", wait_on_error)
                     sys.exit(1)
 
             if name in db["db"]:
@@ -133,7 +132,7 @@ def load_mod_data(cats, db, basedir, modsource):
                     score = cats[db["db"][name]][0]
                 except:
                     print("FIXME: mod '{}' has an unknown category '{}'. stop.".format(name, db["db"][name]))
-                    rwms_error.fatal_error("please report this error to the database maintainer.", wait_on_error)
+                    RWMS.error.fatal_error("please report this error to the database maintainer.", wait_on_error)
                     sys.exit(1)
 
                 # print("mod {} has a score of {}".format(name, score))
@@ -141,7 +140,7 @@ def load_mod_data(cats, db, basedir, modsource):
                     mod_entry = [moddirs, float(score), name, modsource]
 
                 except KeyError:
-                    rwms_error.fatal_error(
+                    RWMS.error.fatal_error(
                         "could not construct dictionary entry for mod {}, score {}".format(name, score), wait_on_error)
                     sys.exit(1)
             else:
@@ -162,16 +161,16 @@ def load_mod_data(cats, db, basedir, modsource):
 # real start of the script
 
 # load scoring mapping dict
-cat = rwms_database.load_categories_mapping(categories_url)
+cat = RWMS.database.load_categories_mapping(categories_url)
 if not cat:
-    rwms_error.fatal_error("Could not load properly categories.", wait_on_error)
+    RWMS.error.fatal_error("Could not load properly categories.", wait_on_error)
     sys.exit(1)
 
 # preload all needed data
 # categories
-database = rwms_database.download_database(database_url)
+database = RWMS.database.download_database(database_url)
 if not database:
-    rwms_error.fatal_error("Error loading scoring database {}.".format(database_file), wait_on_error)
+    RWMS.error.fatal_error("Error loading scoring database {}.".format(database_file), wait_on_error)
     sys.exit(1)
 else:
     print("")
@@ -197,11 +196,11 @@ else:
         print("{} ({}), ".format(c[0], c[1]), end='')
     print("")
 
-modsconfigfile = rimworld_configuration.get_modsconfigfile()
+modsconfigfile = RWMS.configuration.modsconfigfile()
 print("")
 print("Loading and parsing ModsConfig.xml")
 if not os.path.isfile(modsconfigfile):
-    rwms_error.fatal_error("could not find ModsConfig.xml; detected: '{}'".format(modsconfigfile), wait_on_error)
+    RWMS.error.fatal_error("could not find ModsConfig.xml; detected: '{}'".format(modsconfigfile), wait_on_error)
     sys.exit(1)
 xml = ET.parse(modsconfigfile)
 xml = xml.find('activeMods')
@@ -215,18 +214,18 @@ mod_data_workshop = dict()
 mod_data_local = dict()
 
 if not disablesteam:
-    steamworkshopdir = rimworld_configuration.get_mods_steamworkshop_dir()
-    if rimworld_configuration.__detect_rimworld_steam() != "":
+    steamworkshopdir = RWMS.configuration.detect_steamworkshop_dir()
+    if RWMS.configuration.detect_rimworld_steam() != "":
         if not os.path.isdir(steamworkshopdir):
-            rwms_error.fatal_error(
+            RWMS.error.fatal_error(
                      "steam workshop directory '{}' could not be found. please check your installation and / or configuration file.".format(
                          steamworkshopdir), wait_on_error)
             sys.exit(1)
         mod_data_workshop = load_mod_data(cat, database, steamworkshopdir, "W")
 
-localmoddir = rimworld_configuration.get_mods_local_dir()
+localmoddir = RWMS.configuration.detect_localmods_dir()
 if not os.path.isdir(localmoddir):
-    rwms_error.fatal_error(
+    RWMS.error.fatal_error(
              "local mod directory '{}' could not be found. please check your installation and / or configuration file.".format(
                  localmoddir), wait_on_error)
     sys.exit(1)
@@ -253,7 +252,7 @@ now_time = time.strftime('%Y%m%d-%H%M', time.localtime(time.time()))
 shutil.copy(modsconfigfile, modsconfigfile + '.backup-{}'.format(now_time))
 
 if not os.path.isfile(modsconfigfile):
-    rwms_error.fatal_error("error accessing " + modsconfigfile, wait_on_error)
+    RWMS.error.fatal_error("error accessing " + modsconfigfile, wait_on_error)
     sys.exit(1)
 doc = ET.parse(modsconfigfile)
 xml = doc.getroot()
@@ -306,7 +305,7 @@ if mod_unknown:
     DB["version"] = 2
 
     unknown_meta = dict()
-    unknown_meta["contributor"] = rwms_issue_mgmt.__get_github_user().split("@")[0]
+    unknown_meta["contributor"] = RWMS.issue_mgmt.get_github_user().split("@")[0]
     unknown_meta["mods_unknown"] = len(mod_unknown)
     unknown_meta["mods_known"] = len(mods_data_active) + 1
     unknown_meta["rimworld_version"] = rimworld_version
@@ -340,12 +339,12 @@ if mod_unknown:
         json.dump(DB, f, indent=True, sort_keys=True)
     f.close()
 
-    if rwms_issue_mgmt.is_github_configured():
+    if RWMS.issue_mgmt.is_github_configured():
         print("Creating a new issue on the RWMSDB issue tracker.")
         with open(unknownfile, 'r', encoding="UTF-8") as f:
             issuebody = f.read()
         f.close()
-        rwms_issue_mgmt.create_issue('unknown mods found by ' + rwms_issue_mgmt.__get_github_user(), issuebody)
+        RWMS.issue_mgmt.create_issue('unknown mods found by ' + RWMS.issue_mgmt.get_github_user(), issuebody)
     else:
         print(textwrap.fill("For the full list of unknown mods see the written data file in the current directory. " +
                             "You can either submit the data file manually on the RWMSDB issue tracker or on Steam / " +

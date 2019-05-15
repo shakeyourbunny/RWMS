@@ -7,24 +7,24 @@ import time
 
 import requests
 
-import rimworld_configuration
+import RWMS.configuration
 
 
-def __get_github_user():
-    return rimworld_configuration.__load_value_from_config("github_username")
+def get_github_user():
+    return RWMS.configuration.load_value("github", "github_username")
 
 
-def __get_github_token():
-    return rimworld_configuration.__load_value_from_config("github_password")
+def get_github_token():
+    return RWMS.configuration.load_value("github", "github_password")
 
 
 def is_github_configured():
-    return (__get_github_user() and __get_github_token())
+    return (get_github_user() and get_github_token())
 
 
 def create_issue(title, body):
-    USERNAME = __get_github_user()
-    TOKEN = __get_github_token()
+    USERNAME = get_github_user()
+    TOKEN = get_github_token()
 
     if USERNAME == "" or TOKEN == "":
         return False
@@ -70,8 +70,8 @@ def create_issue(title, body):
 if __name__ == '__main__':
 
     if is_github_configured():
-        print("Github User: {}".format(__get_github_user()))
-        print("Github Token: {}".format(__get_github_token()))
+        print("Github User: {}".format(get_github_user()))
+        print("Github Token: {}".format(get_github_token()))
     else:
         print("Github configuration incomplete (user and/or token).")
 
