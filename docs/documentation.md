@@ -21,6 +21,8 @@ Discussion thread on Ludeon: https://ludeon.com/forums/index.php?topic=48518.0
       * [Python 3.6 ](#python-36)
          * [Windows](#windows)
          * [Linux distributions](#linux-distributions)
+         * [Mac OSX](#osx)
+         * [Missing modules](#missing-modules)
       * [RWMS installation](#rwms-installation)
    * [Configuration file](#configuration-file)
       * [General options](#general-options)
@@ -51,7 +53,7 @@ Option | Description
 --help | displays helps and valid command line arguments
 --disable-steam | force disable Steam checks
 --dont-remove-unknown-mods | do not remove unknown mods
---configuration | dumps the current configuration and exits
+--dump-configuration | dumps the current configuration and exits
 --contributors | list all contributors to the script and the database who have contributed more than 10 mods
 --reset-to-core | reset ModsConfig.xml to just Core
 
@@ -81,8 +83,6 @@ you have unknown mods).
 If some mods are unknown, the script will generate a *rws_unknown_mods_YYYYmmdd-HHMM.json.txt* file,
 where all unknown mods are listed. Please submit this file in the forum thread or in the sister
 project, RWMSDB on https://github.com/shakeyourbunny/RWMSDB/issues  
-
-##
 
 ## Upgrading
 It is recommended that you do a clean installation, but you can copy over your 
@@ -122,9 +122,12 @@ Fedora (recent) | repo | sudo dnf install python37
 CentOS 7 | repo | sudo yum install centos-release-scl && sudo yum install rh-python36
 Arch Linux / Manjaro | repo | pacman -S python (should already be installed)
 
-After this, please install the BeautifulSoup python module (Windows and Linux)
+#### OSX
+Download and install Python via https://www.python.org/downloads/mac-osx/ (latest release).
 
->pip install bs4
+#### Missing modules
+After this, run install_requirements.sh (Linux / OSX) or install_requirements.cmd
+to install missing Python modules.
 
 ### RWMS installation
 Download the source distribution from the releases page and unzip it in a 

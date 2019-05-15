@@ -19,7 +19,7 @@ import RWMS.configuration
 import RWMS.database
 import RWMS.error
 import RWMS.issue_mgmt
-import rwms_update
+import RWMS.update
 
 # ##################################################################################
 # some basic initialization
@@ -69,8 +69,8 @@ if args.dump_configuration:
         sys.exit(0)
 
 if updatecheck:
-    if rwms_update.is_update_available(VERSION):
-        print("*** Update available, new version is {} ***".format(rwms_update.__load_version_from_repo()))
+    if RWMS.update.is_update_available(VERSION):
+        print("*** Update available, new version is {} ***".format(RWMS.update.__load_version_from_repo()))
         print("")
         print("Release: https://github.com/shakeyourbunny/RWMS/releases")
         print("")
