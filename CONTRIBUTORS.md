@@ -8,4 +8,5 @@ shakeyourbunny <shakeyourbunny@gmail.com>
 
 Contributors
 ------------
-no other contributors yet
+Jean-Pierre Coetzee (jpc0): fix paths for linux savegame location
+

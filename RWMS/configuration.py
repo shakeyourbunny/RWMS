@@ -79,6 +79,8 @@ def detect_rimworld_steam():
                 if key:
                     steampath, regtype = winreg.QueryValueEx(key, "InstallPath")
             winreg.CloseKey(registry)
+        elif sys.platform == "darwin":
+            steampath = os.environ["HOME"] + "/Library/Application Support/Steam"
     return steampath
 
 
@@ -113,9 +115,9 @@ def detect_rimworld_configdir():
             rimworld_configdir = os.environ[
                                      "USERPROFILE"] + "/AppData/LocalLow/Ludeon Studios/RimWorld by Ludeon Studios/Config"
         elif sys.platform == "linux":
-            rimworld_configdir = os.environ["HOME"] + "/.config/unity3d/Ludeon Studios/RimWorld"
+            rimworld_configdir = os.environ["HOME"] + "/.config/unity3d/Ludeon Studios by Ludeon Studios/RimWorld"
         elif sys.platform == "darwin":
-            rimworld_configdir = os.environ["HOME"] + "Library/Application Support/RimWorld/Config"
+            rimworld_configdir = os.environ["HOME"] + "/Library/Application Support/RimWorld/Config"
     return rimworld_configdir
 
 
