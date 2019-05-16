@@ -58,7 +58,7 @@ def load_value(section, entry, isBool=False):
     return value
 
 
-def detect_rimworld_steam():
+def detect_steam():
     """
     automatic detection of steam
     :return: path to steam base directory
@@ -83,6 +83,15 @@ def detect_rimworld_steam():
             steampath = os.environ["HOME"] + "/Library/Application Support/Steam"
     return steampath
 
+
+def detect_rimworld_steam():
+    rwsteampath = detect_steam()
+    if rwsteampath != "":
+        if sys.platform == "win32":
+            rwsteampath = os.path.join(rwsteampath, "steam", "steamapps", "common", "RimWorld")
+        elif sys.platform == "darwin":
+            rwsteampath = os.path.join(rwsteampath, "steamapps", "common", "RimWorld", "RimWorldMac.app")
+    return rwsteampath
 
 def detect_rimworld_local():
     """
@@ -130,7 +139,7 @@ def detect_steamworkshop_dir():
         return ""
     modsdir = load_value("paths", "workshopdir")
     if modsdir == "":
-        modsdir = detect_rimworld_steam() + "/steamapps/workshop/content/294100"
+        modsdir = os.path.join(detect_steam(), "steamapps", "workshop", "content", "294100")
     return modsdir
 
 
@@ -143,11 +152,11 @@ def detect_localmods_dir():
     if modsdir == "":
         steampath = detect_rimworld_steam()
         if steampath != "":
-            modsdir = steampath + "/steamapps/common/RimWorld/Mods"
+            modsdir = os.path.join(steampath, "Mods")
         else:
             drmfreepath = detect_rimworld_local()
             if drmfreepath != "":
-                modsdir = "{}/Mods".format(drmfreepath)
+                os.path.join(drmfreepath, "Mods")
     return modsdir
 
 
@@ -182,7 +191,7 @@ def __dump_configuration():
     print("Current OS agnostic configuration")
     if detect_rimworld_steam() != "":
         print("")
-        print("Steam is on .....................: " + detect_rimworld_steam())
+        print("Steam is on .....................: " + detect_steam())
         print("")
     print("RimWorld folder .................: " + detect_rimworld())
     print("RimWorld configuration folder ...: " + detect_rimworld_configdir())
