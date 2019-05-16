@@ -81,6 +81,8 @@ def detect_steam():
             winreg.CloseKey(registry)
         elif sys.platform == "darwin":
             steampath = os.environ["HOME"] + "/Library/Application Support/Steam"
+        elif sys.platform == "linux":
+            steampath = os.environ["HOME"] + "/.steam/steam"
     return steampath
 
 
@@ -91,6 +93,8 @@ def detect_rimworld_steam():
             rwsteampath = os.path.join(rwsteampath, "steam", "steamapps", "common", "RimWorld")
         elif sys.platform == "darwin":
             rwsteampath = os.path.join(rwsteampath, "steamapps", "common", "RimWorld", "RimWorldMac.app")
+        elif sys.platform == "linux":
+            rwsteampath = os.path.join(rwsteampath, "steamapps", "common", "RimWorld")
     return rwsteampath
 
 def detect_rimworld_local():
@@ -124,7 +128,7 @@ def detect_rimworld_configdir():
             rimworld_configdir = os.environ[
                                      "USERPROFILE"] + "/AppData/LocalLow/Ludeon Studios/RimWorld by Ludeon Studios/Config"
         elif sys.platform == "linux":
-            rimworld_configdir = os.environ["HOME"] + "/.config/unity3d/Ludeon Studios by Ludeon Studios/RimWorld"
+            rimworld_configdir = os.environ["HOME"] + "/.config/unity3d/Ludeon Studios/RimWorld by Ludeon Studios/Config"
         elif sys.platform == "darwin":
             rimworld_configdir = os.environ["HOME"] + "/Library/Application Support/RimWorld/Config"
     return rimworld_configdir
