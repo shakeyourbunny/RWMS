@@ -88,7 +88,7 @@ def detect_rimworld_steam():
     rwsteampath = detect_steam()
     if rwsteampath != "":
         if sys.platform == "win32":
-            rwsteampath = os.path.join(rwsteampath, "steam", "steamapps", "common", "RimWorld")
+            rwsteampath = os.path.join(rwsteampath, "steamapps", "common", "RimWorld")
         elif sys.platform == "darwin":
             rwsteampath = os.path.join(rwsteampath, "steamapps", "common", "RimWorld", "RimWorldMac.app")
     return rwsteampath
