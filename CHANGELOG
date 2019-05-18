@@ -1,5 +1,17 @@
 RWMS (RimWorldModSorter) changelog:
 
+0.94.6 (2019-05-18:
+new:
+- added requirement.txt and install-requirements script for easier installation needed modules.
+
+changed:
+- fixes for Steam autodetection on Windows.
+- added proper Steam detection for Linux and OSX (thanks jpc0)
+- more flexible start for rwms_sort.sh (thanks jpc0)
+
+changed:
+- internal structure, refactoring for easier source code management.
+
 0.94.5 (2019-05-14):
 fixed:
 - RimWorld version detection in ModsConfig.xml
