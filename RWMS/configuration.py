@@ -190,6 +190,7 @@ def __dump_configuration():
     print('sys.argv[0] is', sys.argv[0])
     print('sys.executable is', sys.executable)
     print('os.getcwd is', os.getcwd())
+    print('sys.platform is', sys.platform)
     print("")
     print("configuration file is {}\n".format(configuration_file()))
     print("Current OS agnostic configuration")
@@ -202,20 +203,23 @@ def __dump_configuration():
     print("RimWorld local mods folder ......: " + detect_localmods_dir())
     print("RimWorld steam workshop folder ..: " + detect_steamworkshop_dir())
 
-    print("RimWorld ModsConfig.xml .........: " + modsconfigfile())
-    print("")
-    print("Updatecheck .....................: {}".format(load_value("rwms", "updatecheck")))
-    print("Open Browser ....................: {}".format(load_value("rwms", "openbrowser")))
-    print("Wait on Error ...................: {}".format(load_value("rwms", "waitforkeypress_on_error")))
-    print("Wait on Exit ....................: {}".format(load_value("rwms", "waitforkeypress_on_exit")))
-    print("Disable Steam Checks ............: {}".format(load_value("rwms", "disablesteam")))
-    print("Do not remove unknown mods ......: {}".format(load_value("rwms", "dontremoveunknown")))
-    print("Tweaks are disabled .............: {}".format(load_value("rwms", "disabletweaks")))
-    print("")
-    if load_value("github", "github_username"):
-        print("GitHub username .................: is set, not displaying it.")
-    if load_value("github", "github_password"):
-        print("GitHub password  ................: is set, not displaying it.")
+    if modsconfigfile() != "":
+        print("RimWorld ModsConfig.xml .........: " + modsconfigfile())
+        print("")
+        print("Updatecheck .....................: {}".format(load_value("rwms", "updatecheck")))
+        print("Open Browser ....................: {}".format(load_value("rwms", "openbrowser")))
+        print("Wait on Error ...................: {}".format(load_value("rwms", "waitforkeypress_on_error")))
+        print("Wait on Exit ....................: {}".format(load_value("rwms", "waitforkeypress_on_exit")))
+        print("Disable Steam Checks ............: {}".format(load_value("rwms", "disablesteam")))
+        print("Do not remove unknown mods ......: {}".format(load_value("rwms", "dontremoveunknown")))
+        print("Tweaks are disabled .............: {}".format(load_value("rwms", "disabletweaks")))
+        print("")
+        if load_value("github", "github_username"):
+            print("GitHub username .................: is set, not displaying it.")
+        if load_value("github", "github_password"):
+            print("GitHub password  ................: is set, not displaying it.")
+    else:
+        print("configuration file not found, using standard values for behaviour.")
 
 
 # debug
