@@ -1,6 +1,18 @@
 RWMS (RimWorldModSorter) changelog:
 
-0.94.6 (2019-05-18:
+0.94.7 (2019-06-30):
+changed:
+- RimWorld release names and mod versions are now filtered out in order to curb the need to add a duplicate
+  database entry for the new mod version of the same mod.
+
+  This also means that the current database format has been slightly tweaked and older versions of RWMS than 0.94.7
+  will likely produce bunch of false unknown mods. This cannot be avoided.
+
+  You should upgrade.
+
+- configuration dump has been adjusted.
+
+0.94.6 (2019-05-18):
 new:
 - added requirement.txt and install-requirements script for easier installation needed modules.
 

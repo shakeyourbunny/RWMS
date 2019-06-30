@@ -3,6 +3,7 @@
 import collections
 import json
 import os
+import re
 import shutil
 import sys
 import textwrap
@@ -23,7 +24,7 @@ import RWMS.update
 
 # ##################################################################################
 # some basic initialization
-VERSION = "0.94.6"
+VERSION = "0.94.7"
 
 twx, twy = shutil.get_terminal_size()
 
@@ -87,6 +88,34 @@ database_file = "rwms_database.json"
 
 mod_unknown = list()
 
+
+#####################################################################################################################
+# functions - cleanup_garbage_name(garbagename)
+def cleanup_garbage_name(garbagename):
+    clean = garbagename
+    regex = re.compile(
+        "(v|V|)\d+\.\d+(\.\d+|)([a-z]|)|\[(1.0|(A|B)\d+)\]|\((1.0|(A|B)\d+)\)|(for |R|)(1.0|(A|B)\d+)|\.1(8|9)")
+    clean = re.sub(regex, "", clean)
+    clean = re.sub(regex, "", clean)
+    clean = clean.replace(" - ", ": ").replace(" : ", ": ")
+    #
+    clean = clean.replace("  ", " ")
+    clean = " ".join(clean.split()).strip()
+
+    # cleanup ruined names
+    clean = clean.replace("()", "")
+    clean = clean.replace("[]", "")
+    clean = clean.replace("(v. )", "")  # Sora's RimFantasy: Brutal Start (v. )
+    if clean.endswith(" Ver"):
+        clean = clean.replace(" Ver", "")  # Starship Troopers Arachnids Ver
+    if clean.endswith(" %"):
+        clean = clean.replace(" %", "")  # Tilled Soil (Rebalanced): %
+    if clean.endswith(":"):
+        clean = clean[:-1]
+
+    return clean
+
+
 ######################################################################################################################
 # functions - read in mod data
 #
@@ -126,6 +155,10 @@ def load_mod_data(cats, db, basedir, modsource):
                 else:
                     RWMS.error.fatal_error("(cannot do a workaround, no steam installation)", wait_on_error)
                     sys.exit(1)
+
+            # cleanup name stuff for version garbage
+            name_old = name
+            name = cleanup_garbage_name(name)
 
             if name in db["db"]:
                 try:
