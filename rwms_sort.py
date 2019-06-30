@@ -105,13 +105,30 @@ def cleanup_garbage_name(garbagename):
     # cleanup ruined names
     clean = clean.replace("()", "")
     clean = clean.replace("[]", "")
+
+    # special cases
     clean = clean.replace("(v. )", "")  # Sora's RimFantasy: Brutal Start (v. )
     if clean.endswith(" Ver"):
         clean = clean.replace(" Ver", "")  # Starship Troopers Arachnids Ver
     if clean.endswith(" %"):
         clean = clean.replace(" %", "")  # Tilled Soil (Rebalanced): %
+    if clean.find("[ "):
+        clean = clean.replace("[ ", "[")  # Additional Traits [ Update]
+    if clean.find("( & b19)"):
+        clean = clean.replace("( & b19)", "")  # Barky's Caravan Dogs ( & b19)
+    if clean.find("[19]"):
+        clean = clean.replace("[19]", "")  # Sailor Scouts Hair [19]
+    if clean.find("[/] Version"):
+        clean = clean.replace("[/] Version", "")  # Fueled Smelter [/] Version
+
     if clean.endswith(":"):
         clean = clean[:-1]
+    if clean.startswith(": "):
+        clean = clean[2:]  # : ACP: More Floors Wool Patch
+    if clean.startswith("-"):
+        clean = clean[1:]  # -FuelBurning
+
+    clean = clean.strip()
 
     return clean
 
