@@ -172,6 +172,19 @@ def modsconfigfile():
     return detect_rimworld_configdir() + "/ModsConfig.xml"
 
 
+def __check_dir(path):
+    if os.path.isdir(path):
+        return "OK " + path
+    else:
+        return "ERR " + path
+
+
+def __check_file(file):
+    if os.path.isfile(file):
+        return "OK " + file
+    else:
+        return "ERR " + file
+
 def __dump_configuration():
     """
     dumps complete configuration of RMWS to stdout
@@ -196,15 +209,15 @@ def __dump_configuration():
     print("Current OS agnostic configuration")
     if detect_rimworld_steam() != "":
         print("")
-        print("Steam is on .....................: " + detect_steam())
+        print("Steam is on .....................: " + __check_dir(detect_steam()))
         print("")
-    print("RimWorld folder .................: " + detect_rimworld())
-    print("RimWorld configuration folder ...: " + detect_rimworld_configdir())
-    print("RimWorld local mods folder ......: " + detect_localmods_dir())
-    print("RimWorld steam workshop folder ..: " + detect_steamworkshop_dir())
+    print("RimWorld folder .................: " + __check_dir(detect_rimworld()))
+    print("RimWorld configuration folder ...: " + __check_dir(detect_rimworld_configdir()))
+    print("RimWorld local mods folder ......: " + __check_dir(detect_localmods_dir()))
+    print("RimWorld steam workshop folder ..: " + __check_dir(detect_steamworkshop_dir()))
 
     if modsconfigfile() != "":
-        print("RimWorld ModsConfig.xml .........: " + modsconfigfile())
+        print("RimWorld ModsConfig.xml .........: " + __check_file(modsconfigfile()))
         print("")
         print("Updatecheck .....................: {}".format(load_value("rwms", "updatecheck")))
         print("Open Browser ....................: {}".format(load_value("rwms", "openbrowser")))

@@ -4,4 +4,3 @@ testdata/
 rws_unknown_mods_*
 rwms_database.json
 .builds/
-build_executable.cmd
