@@ -27,7 +27,8 @@ def download_database(url):
     db = dict()
     if jsondata:
         try:
-            db = json.loads(jsondata)
+            db = json.loads(jsondata.decode("utf-8"))
+            #python 3.6 and above can decode bytes objects automatically, python 3.5 and below cannot.
         except:
             RWMS.error.fatal_error("Could not load data from RWMSDB repository.", wait_on_error)
             sys.exit(1)
@@ -52,7 +53,7 @@ def load_categories_mapping(url):
     jsonurl.close()
 
     try:
-        categories = json.loads(jsondata)
+        categories = json.loads(jsondata.decode("utf-8"))
     except:
         RWMS.error.fatal_error("error parsing loaded jsondata from categories URL.", wait_on_error)
         sys.exit(1)
