@@ -96,7 +96,10 @@ You need a Python 3.6+ installation on your computer. This script does not work 
 Python 3 distributions less then 3.6.
 
 #### Windows
-Windows binary downloads are available on the release page. 
+Windows binary downloads are no longer available for download after 0.94.7. Instead, 
+if you wish to have a binary executable, use the included build_executable.cmd which
+was used for generating these executables. You will need PyInstaller and zip for 
+generating the executable.  
 
 If you wish to use the source directly, see below.
 
@@ -216,7 +219,7 @@ modified:
 added:
 - number of unknown mods
 
-##### datafile version v2 (0.94.1) 
+##### datafile version v2/3 (0.94.1) 
 added:
 - datafile version number
 - number of known mods
@@ -228,6 +231,11 @@ modified:
 - unknown mod entries now include steam workshop url, if steam detection is not disabled 
 (disablesteam = False in configuration file)
 - meta information has now its own category section in the datafile
+
+##### datafile version v4 (0.94.7)
+modified:
+- cleaned up mod names (RimWorld version, mod versions)
+- may lead to unknown mods in older revisions of the script
 
 ## History
 See https://github.com/shakeyourbunny/RWMS/blob/master/CHANGELOG
