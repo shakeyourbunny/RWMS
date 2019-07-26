@@ -38,9 +38,6 @@ parser.add_argument("--dont-remove-unknown-mods", action="store_true", help="do 
 parser.add_argument("--contributors", action="store_true", help="display all contributors to RWMS(DB)")
 parser.add_argument("--dump-configuration", action="store_true",
                     help="displays the current configuration RWMS is thinking of")
-parser.add_argument("--dump-database", action="store_true", help="display the full mod database as json")
-parser.add_argument("--dump-database-scores", action="store_true", help="display a sorted mapping from mod name to sort score as json")
-
 parser.add_argument("--reset-to-core", action="store_true", help="reset mod list to Core only")
 args = parser.parse_args()
 
@@ -57,7 +54,8 @@ wait_on_exit = RWMS.configuration.load_value("rwms", "waitforkeypress_on_exit", 
 disablesteam = RWMS.configuration.load_value("rwms", "disablesteam", True)
 dontremoveunknown = RWMS.configuration.load_value("rwms", "dontremoveunknown", False)
 
-def go_exit(exit_code):
+
+def wait_for_exit(exit_code):
     if wait_on_exit:
         print("")
         input("Press ENTER to end program.")
@@ -72,7 +70,7 @@ if args.dont_remove_unknown_mods:
 
 if args.dump_configuration:
     RWMS.configuration.__dump_configuration()
-    go_exit(0)
+    wait_for_exit(0)
 
 if updatecheck:
     if RWMS.update.is_update_available(VERSION):
@@ -89,6 +87,7 @@ if RWMS.configuration.detect_rimworld() == "":
 
 categories_url = 'https://raw.githubusercontent.com/shakeyourbunny/RWMSDB/master/rwms_db_categories.json'
 database_url = "https://raw.githubusercontent.com/shakeyourbunny/RWMSDB/master/rwmsdb.json"
+mod_unknown = list()
 
 
 #####################################################################################################################
@@ -138,11 +137,11 @@ def cleanup_garbage_name(garbagename):
 ######################################################################################################################
 # functions - read in mod data
 #
-# db_score   = FULL dict of mod to score, where score is the mod's category's score + (index of mod / # total mods), for stable sorting
+# cats       = category listing
 # basedir    = mod base directory
 # modsource  = type of mod installation
 #
-def load_mod_data(db_score, basedir, modsource):
+def load_mod_data(cats, db, basedir, modsource):
     mod_details = dict()
     folderlist = os.listdir(basedir)
     name = str()
@@ -178,9 +177,9 @@ def load_mod_data(db_score, basedir, modsource):
             # cleanup name stuff for version garbage
             name = cleanup_garbage_name(name)
 
-            if name in db_score:
+            if name in db["db"]:
                 try:
-                    score = db_score[name]
+                    score = cats[db["db"][name]][0]
                 except:
                     print("FIXME: mod '{}' has an unknown category '{}'. stop.".format(name, db["db"][name]))
                     RWMS.error.fatal_error("please report this error to the database maintainer.", wait_on_error)
@@ -188,7 +187,9 @@ def load_mod_data(db_score, basedir, modsource):
 
                 # print("mod {} has a score of {}".format(name, score))
                 try:
-                    mod_entry = (moddirs, float(score), name, modsource)
+                    # mod_unknown.append(name)
+                    mod_unknown.append([name, moddirs])
+                    mod_entry = [moddirs, float(score), name, modsource]
 
                 except KeyError:
                     RWMS.error.fatal_error(
@@ -196,7 +197,9 @@ def load_mod_data(db_score, basedir, modsource):
                     sys.exit(1)
             else:
                 # print("mod '{}' is not in database, adding to unknown list.".format(name))
-                mod_entry = (moddirs, None, name, modsource)
+                # mod_unknown.append(name)
+                mod_unknown.append([name, moddirs])
+                mod_entry = list()
 
             mod_details[moddirs] = mod_entry
         else:
@@ -209,8 +212,8 @@ def load_mod_data(db_score, basedir, modsource):
 # real start of the script
 
 # load scoring mapping dict
-cats = RWMS.database.load_categories_mapping(categories_url)
-if not cats:
+cat = RWMS.database.load_categories_mapping(categories_url)
+if not cat:
     RWMS.error.fatal_error("Could not load properly categories.", wait_on_error)
     sys.exit(1)
 
@@ -220,34 +223,11 @@ database = RWMS.database.download_database(database_url)
 if not database:
     RWMS.error.fatal_error("Error loading scoring database {}.".format(database_url), wait_on_error)
     sys.exit(1)
-db = database['db']
-db_len = len(db)
-
-# if os.path.isfile("rwms_database.json"):
-#     print("loading local database.")
-#     with open("rwms_database.json", 'r', encoding='utf-8') as f:
-#         local_database = json.load(f)
-#     # merging the local and remote databases in this way to prioritize ordering in local database over remote database
-#     # this allows custom local reordering of mods in the same category
-#     db = local_database.get('db', {}).copy()
-#     for k, v in database['db'].items():
-#         db.setdefault(k, v)
-#     db_len = len(db)
-#     database = {
-#         'contributor': database['contributor'],
-#         'db': db,
-#         'remote_db': database['db'],
-#         'timestamp': database['timestamp'],
-#         'version': database['version'],
-#     }
-
-print("")
-print("Database (v{}, date: {}) successfully loaded.".format(database["version"],
-                                                                                database["timestamp"]))
-print("{} known mods, {} contributors.".format(db_len, len(database["contributor"])))
-if args.dump_database:
-    print(json.dumps(db, indent=4))
-    go_exit(0)
+else:
+    print("")
+    print("Database (v{}, date: {}) successfully loaded.".format(database["version"],
+                                                                 database["timestamp"]))
+    print("{} known mods, {} contributors.".format(len(database["db"]), len(database["contributor"])))
 
 # if len(sys.argv) > 1 and sys.argv[1] == "contributors":
 if args.contributors:
@@ -256,7 +236,7 @@ if args.contributors:
     for contributors in d:
         if contributors[1] >= 10:
             print("{:<30} {:>5}".format(contributors[0], contributors[1]))
-    go_exit(0)
+    wait_for_exit(0)
 else:
     contributors = collections.Counter(database["contributor"])
     print("Top contributors: ", end='')
@@ -276,12 +256,6 @@ mods_enabled_list = [t.text for t in xml.findall('li')]
 if not "Core" in mods_enabled_list:
     mods_enabled_list.append("Core")
 
-# generate dict of mod to score, where score is the mod's category's score + (index of mod / # total mods), for stable sorting
-db_score = {mod_cat[0]: cats[mod_cat[1]][0] + float(index) / db_len for (index, mod_cat) in enumerate(db.items())}
-if args.dump_database_scores:
-    print(json.dumps(dict(sorted(db_score.items(), key=itemgetter(1))), indent=4))
-    go_exit(0)
-
 # check auf unknown mods
 print("Loading mod data.")
 mod_data_workshop = dict()
@@ -295,7 +269,7 @@ if not disablesteam:
                      "steam workshop directory '{}' could not be found. please check your installation and / or configuration file.".format(
                          steamworkshopdir), wait_on_error)
             sys.exit(1)
-        mod_data_workshop = load_mod_data(db_score, steamworkshopdir, "W")
+        mod_data_workshop = load_mod_data(cat, database, steamworkshopdir, "W")
 
 localmoddir = RWMS.configuration.detect_localmods_dir()
 if not os.path.isdir(localmoddir):
@@ -303,7 +277,7 @@ if not os.path.isdir(localmoddir):
              "local mod directory '{}' could not be found. please check your installation and / or configuration file.".format(
                  localmoddir), wait_on_error)
     sys.exit(1)
-mod_data_local = load_mod_data(db_score, localmoddir, "L")
+mod_data_local = load_mod_data(cat, database, localmoddir, "L")
 
 mod_data_full = {**mod_data_local, **mod_data_workshop}
 mod_data_known = {}
@@ -321,7 +295,7 @@ mods_data_active = list()
 mods_unknown_active = list()
 for mods in mods_enabled_list:
     try:
-        mods_data_active.append([mods, mod_data_known[mods][1]])
+        mods_data_active.append([mods, mod_data_full[mods][1]])
 
     except KeyError:
         # print("Unknown mod ID {}, deactivating it from mod list.".format(mods))
@@ -476,4 +450,4 @@ if write_modsconfig:
 else:
     print("ModsConfig.xml was NOT modified.")
 
-go_exit(0)
+wait_for_exit(0)

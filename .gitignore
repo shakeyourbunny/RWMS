@@ -1,6 +1,8 @@
+.builds/
 .idea/
+venv/
 __pycache__
 testdata/
 rwms_unknown_mods_*
 rwms_database.json
-.builds/
+

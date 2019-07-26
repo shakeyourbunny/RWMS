@@ -1,7 +1,6 @@
 # RimWorld database handling stuff
 import json
 import sys
-import os
 from urllib.request import urlopen
 
 import RWMS.configuration
