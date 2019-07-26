@@ -46,7 +46,7 @@ def create_issue(title, body):
 
     ok = False
     if r.status_code == 201:
-        print("Successfully created issue.".format(title))
+        print("Successfully created issue {}.".format(title))
         print("")
         # print(r.content)
         print("Your issue URL is: {}".format(json.loads(r.content)["url"]))

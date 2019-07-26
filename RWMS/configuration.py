@@ -73,11 +73,11 @@ def detect_steam():
             registry = winreg.ConnectRegistry(None, winreg.HKEY_LOCAL_MACHINE)
             if registry:
                 try:
-                    key = winreg.OpenKey(registry, "SOFTWARE\WoW6432Node\Valve\Steam")
+                    key = winreg.OpenKey(registry, r"SOFTWARE\WoW6432Node\Valve\Steam")
                 except:
                     steampath = ""
                 if key:
-                    steampath, regtype = winreg.QueryValueEx(key, "InstallPath")
+                    steampath, _ = winreg.QueryValueEx(key, "InstallPath")
             winreg.CloseKey(registry)
         elif sys.platform == "darwin":
             steampath = os.environ["HOME"] + "/Library/Application Support/Steam"
@@ -126,7 +126,7 @@ def detect_rimworld_configdir():
     if rimworld_configdir == "":
         if sys.platform == "win32":
             rimworld_configdir = os.environ[
-                                     "USERPROFILE"] + "/AppData/LocalLow/Ludeon Studios/RimWorld by Ludeon Studios/Config"
+                                     "USERPROFILE"] + r"\AppData\LocalLow\Ludeon Studios\RimWorld by Ludeon Studios\Config"
         elif sys.platform == "linux":
             rimworld_configdir = os.environ["HOME"] + "/.config/unity3d/Ludeon Studios/RimWorld by Ludeon Studios/Config"
         elif sys.platform == "darwin":
@@ -169,7 +169,7 @@ def modsconfigfile():
     ModsConfig.xml
     :return: returns full path of ModsConfig.xml
     """
-    return detect_rimworld_configdir() + "/ModsConfig.xml"
+    return os.path.join(detect_rimworld_configdir(), "ModsConfig.xml")
 
 
 def __check_dir(path):
@@ -194,7 +194,7 @@ def __dump_configuration():
     if getattr(sys, 'frozen', False):
         # we are running in a bundle
         frozen = 'ever so'
-        bundle_dir = sys._MEIPASS
+        bundle_dir = sys._MEIPASS # pylint: disable=no-member
     else:
         # we are running in a normal Python environment
         bundle_dir = os.path.dirname(os.path.abspath(__file__))

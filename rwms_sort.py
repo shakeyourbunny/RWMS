@@ -38,6 +38,8 @@ parser.add_argument("--dont-remove-unknown-mods", action="store_true", help="do 
 parser.add_argument("--contributors", action="store_true", help="display all contributors to RWMS(DB)")
 parser.add_argument("--dump-configuration", action="store_true",
                     help="displays the current configuration RWMS is thinking of")
+parser.add_argument("--dump-database", action="store_true", help="display the full mod database as json")
+parser.add_argument("--dump-database-scores", action="store_true", help="display a sorted mapping from mod name to sort score as json")
 
 parser.add_argument("--reset-to-core", action="store_true", help="reset mod list to Core only")
 args = parser.parse_args()
@@ -55,6 +57,12 @@ wait_on_exit = RWMS.configuration.load_value("rwms", "waitforkeypress_on_exit", 
 disablesteam = RWMS.configuration.load_value("rwms", "disablesteam", True)
 dontremoveunknown = RWMS.configuration.load_value("rwms", "dontremoveunknown", False)
 
+def go_exit(exit_code):
+    if wait_on_exit:
+        print("")
+        input("Press ENTER to end program.")
+    sys.exit(exit_code)
+
 # command line switches, override configuration file
 if args.disable_steam:
     disablesteam = True
@@ -64,10 +72,7 @@ if args.dont_remove_unknown_mods:
 
 if args.dump_configuration:
     RWMS.configuration.__dump_configuration()
-    if wait_on_exit:
-        print("")
-        input("Press ENTER to end program.")
-        sys.exit(0)
+    go_exit(0)
 
 if updatecheck:
     if RWMS.update.is_update_available(VERSION):
@@ -84,9 +89,6 @@ if RWMS.configuration.detect_rimworld() == "":
 
 categories_url = 'https://raw.githubusercontent.com/shakeyourbunny/RWMSDB/master/rwms_db_categories.json'
 database_url = "https://raw.githubusercontent.com/shakeyourbunny/RWMSDB/master/rwmsdb.json"
-database_file = "rwms_database.json"
-
-mod_unknown = list()
 
 
 #####################################################################################################################
@@ -94,7 +96,7 @@ mod_unknown = list()
 def cleanup_garbage_name(garbagename):
     clean = garbagename
     regex = re.compile(
-        "(v|V|)\d+\.\d+(\.\d+|)([a-z]|)|\[(1.0|(A|B)\d+)\]|\((1.0|(A|B)\d+)\)|(for |R|)(1.0|(A|B)\d+)|\.1(8|9)")
+        r"(v|V|)\d+\.\d+(\.\d+|)([a-z]|)|\[(1.0|(A|B)\d+)\]|\((1.0|(A|B)\d+)\)|(for |R|)(1.0|(A|B)\d+)|\.1(8|9)")
     clean = re.sub(regex, "", clean)
     clean = re.sub(regex, "", clean)
     clean = clean.replace(" - ", ": ").replace(" : ", ": ")
@@ -136,11 +138,11 @@ def cleanup_garbage_name(garbagename):
 ######################################################################################################################
 # functions - read in mod data
 #
-# cats       = categories
-# db         = FULL db dict
+# db_score   = FULL dict of mod to score, where score is the mod's category's score + (index of mod / # total mods), for stable sorting
+# basedir    = mod base directory
 # modsource  = type of mod installation
 #
-def load_mod_data(cats, db, basedir, modsource):
+def load_mod_data(db_score, basedir, modsource):
     mod_details = dict()
     folderlist = os.listdir(basedir)
     name = str()
@@ -150,7 +152,7 @@ def load_mod_data(cats, db, basedir, modsource):
             try:
                 xml = ET.parse(aboutxml)
                 name = xml.find('name').text
-            except ET.ParseError as pe:
+            except ET.ParseError:
                 print("Mod ID is '{}'".format(moddirs))
                 print("** error: malformed XML in {}".format(aboutxml))
                 # print("Line {}, Offset {}".format(pe.lineno, pe.offset))
@@ -174,12 +176,11 @@ def load_mod_data(cats, db, basedir, modsource):
                     sys.exit(1)
 
             # cleanup name stuff for version garbage
-            name_old = name
             name = cleanup_garbage_name(name)
 
-            if name in db["db"]:
+            if name in db_score:
                 try:
-                    score = cats[db["db"][name]][0]
+                    score = db_score[name]
                 except:
                     print("FIXME: mod '{}' has an unknown category '{}'. stop.".format(name, db["db"][name]))
                     RWMS.error.fatal_error("please report this error to the database maintainer.", wait_on_error)
@@ -187,7 +188,7 @@ def load_mod_data(cats, db, basedir, modsource):
 
                 # print("mod {} has a score of {}".format(name, score))
                 try:
-                    mod_entry = [moddirs, float(score), name, modsource]
+                    mod_entry = (moddirs, float(score), name, modsource)
 
                 except KeyError:
                     RWMS.error.fatal_error(
@@ -195,12 +196,9 @@ def load_mod_data(cats, db, basedir, modsource):
                     sys.exit(1)
             else:
                 # print("mod '{}' is not in database, adding to unknown list.".format(name))
-                # mod_unknown.append(name)
-                mod_unknown.append([name, moddirs])
-                mod_entry = list()
+                mod_entry = (moddirs, None, name, modsource)
 
-            if mod_entry:
-                mod_details[moddirs] = mod_entry
+            mod_details[moddirs] = mod_entry
         else:
             print("could not find metadata for item " + moddirs + " (skipping, is probably a scenario)!")
             name = ""
@@ -211,8 +209,8 @@ def load_mod_data(cats, db, basedir, modsource):
 # real start of the script
 
 # load scoring mapping dict
-cat = RWMS.database.load_categories_mapping(categories_url)
-if not cat:
+cats = RWMS.database.load_categories_mapping(categories_url)
+if not cats:
     RWMS.error.fatal_error("Could not load properly categories.", wait_on_error)
     sys.exit(1)
 
@@ -220,13 +218,36 @@ if not cat:
 # categories
 database = RWMS.database.download_database(database_url)
 if not database:
-    RWMS.error.fatal_error("Error loading scoring database {}.".format(database_file), wait_on_error)
+    RWMS.error.fatal_error("Error loading scoring database {}.".format(database_url), wait_on_error)
     sys.exit(1)
-else:
-    print("")
-    print("Database (v{}, date: {}) successfully loaded.".format(database["version"],
-                                                                                 database["timestamp"]))
-    print("{} known mods, {} contributors.".format(len(database["db"]), len(database["contributor"])))
+db = database['db']
+db_len = len(db)
+
+# if os.path.isfile("rwms_database.json"):
+#     print("loading local database.")
+#     with open("rwms_database.json", 'r', encoding='utf-8') as f:
+#         local_database = json.load(f)
+#     # merging the local and remote databases in this way to prioritize ordering in local database over remote database
+#     # this allows custom local reordering of mods in the same category
+#     db = local_database.get('db', {}).copy()
+#     for k, v in database['db'].items():
+#         db.setdefault(k, v)
+#     db_len = len(db)
+#     database = {
+#         'contributor': database['contributor'],
+#         'db': db,
+#         'remote_db': database['db'],
+#         'timestamp': database['timestamp'],
+#         'version': database['version'],
+#     }
+
+print("")
+print("Database (v{}, date: {}) successfully loaded.".format(database["version"],
+                                                                                database["timestamp"]))
+print("{} known mods, {} contributors.".format(db_len, len(database["contributor"])))
+if args.dump_database:
+    print(json.dumps(db, indent=4))
+    go_exit(0)
 
 # if len(sys.argv) > 1 and sys.argv[1] == "contributors":
 if args.contributors:
@@ -235,10 +256,7 @@ if args.contributors:
     for contributors in d:
         if contributors[1] >= 10:
             print("{:<30} {:>5}".format(contributors[0], contributors[1]))
-    if wait_on_exit:
-        print("")
-        input("Press ENTER to close the program.")
-    sys.exit(0)
+    go_exit(0)
 else:
     contributors = collections.Counter(database["contributor"])
     print("Top contributors: ", end='')
@@ -258,6 +276,12 @@ mods_enabled_list = [t.text for t in xml.findall('li')]
 if not "Core" in mods_enabled_list:
     mods_enabled_list.append("Core")
 
+# generate dict of mod to score, where score is the mod's category's score + (index of mod / # total mods), for stable sorting
+db_score = {mod_cat[0]: cats[mod_cat[1]][0] + float(index) / db_len for (index, mod_cat) in enumerate(db.items())}
+if args.dump_database_scores:
+    print(json.dumps(dict(sorted(db_score.items(), key=itemgetter(1))), indent=4))
+    go_exit(0)
+
 # check auf unknown mods
 print("Loading mod data.")
 mod_data_workshop = dict()
@@ -271,7 +295,7 @@ if not disablesteam:
                      "steam workshop directory '{}' could not be found. please check your installation and / or configuration file.".format(
                          steamworkshopdir), wait_on_error)
             sys.exit(1)
-        mod_data_workshop = load_mod_data(cat, database, steamworkshopdir, "W")
+        mod_data_workshop = load_mod_data(db_score, steamworkshopdir, "W")
 
 localmoddir = RWMS.configuration.detect_localmods_dir()
 if not os.path.isdir(localmoddir):
@@ -279,27 +303,35 @@ if not os.path.isdir(localmoddir):
              "local mod directory '{}' could not be found. please check your installation and / or configuration file.".format(
                  localmoddir), wait_on_error)
     sys.exit(1)
-mod_data_local = load_mod_data(cat, database, localmoddir, "L")
+mod_data_local = load_mod_data(db_score, localmoddir, "L")
 
 mod_data_full = {**mod_data_local, **mod_data_workshop}
+mod_data_known = {}
+mod_data_unknown = {}
+for mods, mod_entry in mod_data_full.items():
+    if mod_entry[1] is not None:
+        mod_data_known[mods] = mod_entry
+        # always include mods unrecognized in remote database
+        if 'remote_db' in database and mod_entry[2] not in database['remote_db']:
+            mod_data_unknown[mods] = mod_entry
+    else:
+        mod_data_unknown[mods] = mod_entry
 
 mods_data_active = list()
+mods_unknown_active = list()
 for mods in mods_enabled_list:
     try:
-        mods_data_active.append([mods, mod_data_full[mods][1]])
+        mods_data_active.append([mods, mod_data_known[mods][1]])
 
     except KeyError:
-        pass
         # print("Unknown mod ID {}, deactivating it from mod list.".format(mods))
+        mods_unknown_active.append(mods)
 
 print("Sorting mods.")
 newlist = sorted(mods_data_active, key=itemgetter(1))
 print("")
 print("{} subscribed mods, {} ({} known, {} unknown) enabled mods".format(len(mod_data_full), len(mods_enabled_list),
-                                                                          len(mods_data_active) + 1, len(mod_unknown)))
-# do backup
-now_time = time.strftime('%Y%m%d-%H%M', time.localtime(time.time()))
-shutil.copy(modsconfigfile, modsconfigfile + '.backup-{}'.format(now_time))
+                                                                          len(mods_data_active) + 1, len(mods_unknown_active)))
 
 if not os.path.isfile(modsconfigfile):
     RWMS.error.fatal_error("error accessing " + modsconfigfile, wait_on_error)
@@ -320,6 +352,10 @@ for li in xml.findall('li'):
     xml.remove(li)
 # ET.dump(doc)
 
+now_time = time.strftime('%Y%m%d-%H%M', time.localtime(time.time()))
+
+write_modsconfig = False
+
 if args.reset_to_core:
     while True:
         data = input("Do you want to reset your mod list to Core only (y/n)? ")
@@ -327,115 +363,117 @@ if args.reset_to_core:
             break
     if data.lower() == "y":
         print("Resetting your ModsConfig.xml to Core only!")
-
         xml_sorted = ET.SubElement(xml, 'li')
         xml_sorted.text = "Core"
+        write_modsconfig = True
 
-        doc.write(modsconfigfile, encoding='UTF-8', xml_declaration='False')
-        if wait_on_exit:
-            print("")
-            input("Press ENTER to close the program.")
-        sys.exit(1)
-
-for mods in newlist:
-    # print(mods)
-    if mods[0] == "":
-        print("skipping, empty?")
-    else:
-        xml_sorted = ET.SubElement(xml, 'li')
-        xml_sorted.text = str(mods[0])
-    # ET.dump(doc)
-
-### finish -- unknown mods handling
-write_modsconfig = False
-if mod_unknown:
-    print("")
-    print("Processing unknown mods.")
-    DB = dict()
-    DB["version"] = 2
-
-    unknown_meta = dict()
-    unknown_meta["contributor"] = RWMS.issue_mgmt.get_github_user().split("@")[0]
-    unknown_meta["mods_unknown"] = len(mod_unknown)
-    unknown_meta["mods_known"] = len(mods_data_active) + 1
-    unknown_meta["rimworld_version"] = rimworld_version
-    unknown_meta["rwms_version"] = VERSION
-    unknown_meta["os"] = sys.platform
-    unknown_meta["time"] = str(time.ctime())
-    DB["meta"] = unknown_meta
+else:
+    for mods in newlist:
+        # print(mods)
+        if mods[0] == "":
+            print("skipping, empty?")
+        else:
+            xml_sorted = ET.SubElement(xml, 'li')
+            xml_sorted.text = str(mods[0])
+        # ET.dump(doc)
 
     if dontremoveunknown:
         print("Adding in unknown mods in the load order (at the bottom).")
-        for mods in mod_unknown:
+        for mods in mods_unknown_active:
             if mods[0] == "":
                 print("skipping, empty?")
             else:
                 xml_sorted = ET.SubElement(xml, 'li')
-                xml_sorted.text = str(mods[1])
+                xml_sorted.text = str(mods)
 
-    unknown_diff = dict()
-    for mods in mod_unknown:
-        if not disablesteam:
-            workshop_url = "https://steamcommunity.com/sharedfiles/filedetails/?id={}".format(mods[1])
-        else:
-            workshop_url = ""
-        unknown_diff[mods[0]] = ["not_categorized", workshop_url]
-    DB["unknown"] = unknown_diff
+    ### finish -- unknown mods handling
+    if mod_data_unknown:
+        print("")
+        print("Processing unknown mods.")
+        DB = dict()
+        DB["version"] = 2
 
-    unknownfile = "rwms_unknown_mods_{}.json.txt".format(now_time)
-    print("Writing unknown mods.")
-    print("")
-    with open(unknownfile, "w", encoding="UTF-8", newline="\n") as f:
-        json.dump(DB, f, indent=True, sort_keys=True)
-    f.close()
+        unknown_meta = dict()
+        unknown_meta["contributor"] = RWMS.issue_mgmt.get_github_user().split("@")[0]
+        unknown_meta["mods_unknown"] = len(mod_data_unknown)
+        unknown_meta["mods_known"] = len(mods_data_active) + 1
+        unknown_meta["rimworld_version"] = rimworld_version
+        unknown_meta["rwms_version"] = VERSION
+        unknown_meta["os"] = sys.platform
+        unknown_meta["time"] = str(time.ctime())
+        DB["meta"] = unknown_meta
 
-    if RWMS.issue_mgmt.is_github_configured():
-        print("Creating a new issue on the RWMSDB issue tracker.")
-        with open(unknownfile, 'r', encoding="UTF-8") as f:
-            issuebody = f.read()
+        unknown_diff = dict()
+        for mod_entry in mod_data_unknown.values():
+            if mod_entry[3] == "L":
+                mod_loc = os.path.join("<RimWorld install directory>", "Mods", mod_entry[0]) # not printing actual path for security/privacy
+            elif not disablesteam:
+                mod_loc = "https://steamcommunity.com/sharedfiles/filedetails/?id={}".format(mod_entry[0])
+            else:
+                mod_loc = ""
+            unknown_diff[mod_entry[2]] = ("not_categorized", mod_loc)
+        DB["unknown"] = unknown_diff
+
+        unknownfile = "rwms_unknown_mods_{}.json.txt".format(now_time)
+        print("Writing unknown mods.")
+        print("")
+        with open(unknownfile, "w", encoding="UTF-8", newline="\n") as f:
+            json.dump(DB, f, indent=True, sort_keys=True)
         f.close()
-        RWMS.issue_mgmt.create_issue('unknown mods found by ' + RWMS.issue_mgmt.get_github_user(), issuebody)
-    else:
-        print(textwrap.fill("For the full list of unknown mods see the written data file in the current directory. " +
-                            "You can either submit the data file manually on the RWMSDB issue tracker or on Steam / " +
-                            "Ludeon forum thread. Thank you!", 78))
-        print("")
-        print("Data file name is {}".format(unknownfile))
-        print("")
 
-        while True:
-            data = input("Do you want to open the RWMSDB issues web page in your default browser (y/n): ")
-            if data.lower() in ('y', 'n'):
-                break
-        if data.lower() == "y":
-            print("Trying to open the default webbrowser for RWMSDB issues page.")
+        if RWMS.issue_mgmt.is_github_configured():
+            print("Creating a new issue on the RWMSDB issue tracker.")
+            with open(unknownfile, 'r', encoding="UTF-8") as f:
+                issuebody = f.read()
+            f.close()
+            RWMS.issue_mgmt.create_issue('unknown mods found by ' + RWMS.issue_mgmt.get_github_user(), issuebody)
+        else:
+            print(textwrap.fill("For the full list of unknown mods see the written data file in the current directory. " +
+                                "You can either submit the data file manually on the RWMSDB issue tracker or on Steam / " +
+                                "Ludeon forum thread. Thank you!", 78))
             print("")
-            webbrowser.open_new("https://www.github.com/shakeyourbunny/RWMSDB/issues")
+            print("Data file name is {}".format(unknownfile))
+            print("")
 
-    # ask for confirmation to write the ModsConfig.xml anyway
-    while True:
+            while True:
+                data = input("Do you want to open the RWMSDB issues web page in your default browser (y/n): ")
+                if data.lower() in ('y', 'n'):
+                    break
+            if data.lower() == "y":
+                print("Trying to open the default webbrowser for RWMSDB issues page.")
+                print("")
+                webbrowser.open_new("https://www.github.com/shakeyourbunny/RWMSDB/issues")
+
         if dontremoveunknown:
             print("Unknown mods will be written at the end of the mod list.")
         else:
             print("Unknown mods will be removed.")
+    else:
+        print("lucky, no unknown mods detected!")
 
+    # ask for confirmation to write the ModsConfig.xml anyway
+    while True:
         data = input("Do you REALLY want to write ModsConfig.xml (y/n): ")
         if data.lower() in ('y', 'n'):
             break
-
     if data.lower() == 'y':
         write_modsconfig = True
-else:
-    print("lucky, no unknown mods detected!")
-    write_modsconfig = True
 
 if write_modsconfig:
+    # do backup
+    backupfile = modsconfigfile + '.backup-{}'.format(now_time)
+    shutil.copy(modsconfigfile, backupfile)
+    print("Backed up ModsConfig.xml to {}.".format(backupfile))
+
     print("Writing new ModsConfig.xml.")
-    doc.write(modsconfigfile, encoding='UTF-8', xml_declaration='False')
+    modsconfigstr = ET.tostring(doc.getroot(), encoding='unicode')
+    with open(modsconfigfile, "w", encoding='utf-8-sig', newline="\n") as f:
+        # poor man's pretty print
+        f.write('<?xml version="1.0" encoding="utf-8"?>\n')
+        modsconfigstr = modsconfigstr.replace('</li><li>', '</li>\n    <li>').replace('</li></activeMods>', '</li>\n  </activeMods>')
+        f.write(modsconfigstr)
     print("Writing done.")
 else:
     print("ModsConfig.xml was NOT modified.")
 
-if wait_on_exit:
-    print("")
-    input("Press ENTER to close the program.")
+go_exit(0)

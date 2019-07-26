@@ -15,6 +15,7 @@ cd %builddir%
 where /q pyinstaller
 if errorlevel 1 goto no_pyinstaller
 
+if exist "C:\Program Files\7-Zip\7z.exe" goto start
 where /q zip
 if errorlevel 1 goto no_zip
 
@@ -42,11 +43,22 @@ move dist\rwms_sort.exe dist\rwms_sort-%version%.exe
 
 rem -- creating zip archives
 rem Windows
-zip -mj9 dist\rwms_sort-%version%-win.zip dist\rwms_sort-%version%.exe dist\rwms_config.ini
-cd ..\..
+cd dist
+if exist rwms_sort-%version%-win.zip del rwms_sort-%version%-win.zip
+if exist "C:\Program Files\7-Zip\7z.exe" (
+  "C:\Program Files\7-Zip\7z.exe" a -tzip -mx9 -sdel rwms_sort-%version%-win.zip rwms_sort-%version%.exe rwms_config.ini
+) else (
+  zip -mj9 rwms_sort-%version%-win.zip rwms_sort-%version%.exe rwms_config.ini
+)
+cd ..\..\..
 
 rem build source archive
-zip -j9 .builds\%version%\dist\rwms_sort-%version%-source.zip *.py *.cmd *.bat *.sh rwms_config.ini *.md LICENSE VERSION
+if exist .builds\%version%\dist\rwms_sort-%version%-source.zip del .builds\%version%\dist\rwms_sort-%version%-source.zip
+if exist "C:\Program Files\7-Zip\7z.exe" (
+  "C:\Program Files\7-Zip\7z.exe" a -tzip -mx9 -r .builds\%version%\dist\rwms_sort-%version%-source.zip *.py *.cmd *.bat *.sh rwms_config.ini *.md LICENSE VERSION
+) else (
+  zip -j9 .builds\%version%\dist\rwms_sort-%version%-source.zip *.py *.cmd *.bat *.sh rwms_config.ini *.md LICENSE VERSION
+)
 goto byebye
 
 :byebye

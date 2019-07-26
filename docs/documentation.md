@@ -80,7 +80,7 @@ or (Linux)
 There should be no interactions if not desired (except writing ModsConfig.xml if 
 you have unknown mods).
 
-If some mods are unknown, the script will generate a *rws_unknown_mods_YYYYmmdd-HHMM.json.txt* file,
+If some mods are unknown, the script will generate a *rwms_unknown_mods_YYYYmmdd-HHMM.json.txt* file,
 where all unknown mods are listed. Please submit this file in the forum thread or in the sister
 project, RWMSDB on https://github.com/shakeyourbunny/RWMSDB/issues  
 
