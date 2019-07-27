@@ -24,7 +24,7 @@ import RWMS.update
 
 # ##################################################################################
 # some basic initialization
-VERSION = "0.94.7"
+VERSION = "0.94.8"
 
 twx, twy = shutil.get_terminal_size()
 
@@ -252,7 +252,13 @@ print("Loading and parsing ModsConfig.xml")
 if not os.path.isfile(modsconfigfile):
     RWMS.error.fatal_error("could not find ModsConfig.xml; detected: '{}'".format(modsconfigfile), wait_on_error)
     sys.exit(1)
-xml = ET.parse(modsconfigfile)
+
+try:
+    xml = ET.parse(modsconfigfile)
+except:
+    RWMS.error.fatal_error("could not parse XML from ModsConfig.xml.", wait_on_error)
+    sys.exit(1)
+
 xml = xml.find('activeMods')
 mods_enabled_list = [t.text for t in xml.findall('li')]
 if not "Core" in mods_enabled_list:
@@ -336,6 +342,8 @@ if args.reset_to_core:
 
         doc.write(modsconfigfile, encoding='UTF-8', xml_declaration='False')
         wait_for_exit(1)
+    elif data.lower() == "n":
+        wait_for_exit(0)
 
 for mods in newlist:
     # print(mods)
@@ -419,9 +427,9 @@ if mod_unknown:
     # ask for confirmation to write the ModsConfig.xml anyway
     while True:
         if dontremoveunknown:
-            print("Unknown mods will be written at the end of the mod list.")
+            print("Unknown, ACTIVE mods will be written at the end of the mod list.")
         else:
-            print("Unknown mods will be removed.")
+            print("Unknown, ACTIVE mods will be removed.")
 
         data = input("Do you REALLY want to write ModsConfig.xml (y/n): ")
         if data.lower() in ('y', 'n'):

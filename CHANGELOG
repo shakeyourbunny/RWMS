@@ -1,4 +1,21 @@
 RWMS (RimWorldModSorter) changelog:
+0.94.8 (2019-07-26):
+new:
+- build script for windows executable
+
+changed:
+- improved mod name cleaner
+- 7zip support for build script (thanks Ibmaian)
+- 7zip support improvements in build script
+- re-added windows binary executable in release
+- improved configuration dump, checks now validity of paths
+- improved documentation
+- pretty print ModsConfig.xml (thanks Ibmaian)
+
+fixed:
+- crash on empty ModsConfig.xml
+- several small internal cosmetic and lint fixes (thanks Ibmaian)
+- fix for older Python versions (thanks Rocketeer999)
 
 0.94.7 (2019-06-30):
 changed:
@@ -20,8 +37,6 @@ changed:
 - fixes for Steam autodetection on Windows.
 - added proper Steam detection for Linux and OSX (thanks jpc0)
 - more flexible start for rwms_sort.sh (thanks jpc0)
-
-changed:
 - internal structure, refactoring for easier source code management.
 
 0.94.5 (2019-05-14):

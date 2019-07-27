@@ -1,4 +1,4 @@
-@echo off
+rem @echo off
 rem you need PyInstaller for generating the executable.
 
 set version=
@@ -17,10 +17,10 @@ if errorlevel 1 goto no_pyinstaller
 
 set use_7zip=no
 
-if exist ""%PROGRAMFILES%\7z.exe" set use_7zip=yes
-if "%use_7zip" == "yes" set zipexec="%PROGRAMFILES\7z.exe a -tzip -mx9 -r "
-if "%use_7zip" == "yes" set zipexec_move="%PROGRAMFILES%\7z.exe a -tzip -mx9 -sdel "
-if "%use_7zip" == "yes" goto start
+if exist "%PROGRAMFILES%\7-zip\7z.exe" set use_7zip=yes
+if "%use_7zip%" == "yes" set zipexec="%PROGRAMFILES%\7z.exe a -tzip -mx9 -r "
+if "%use_7zip%" == "yes" set zipexec_move="%PROGRAMFILES%\7z.exe a -tzip -mx9 -sdel "
+if "%use_7zip%" == "yes" goto start
 
 where /q zip
 if errorlevel 1 goto no_zip

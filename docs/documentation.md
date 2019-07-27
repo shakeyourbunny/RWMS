@@ -96,10 +96,7 @@ You need a Python 3.6+ installation on your computer. This script does not work 
 Python 3 distributions less then 3.6.
 
 #### Windows
-Windows binary downloads are no longer available for download after 0.94.7. Instead, 
-if you wish to have a binary executable, use the included build_executable.cmd which
-was used for generating these executables. You will need PyInstaller and zip for 
-generating the executable.  
+Windows binary downloads are available for download on the Github release page.
 
 If you wish to use the source directly, see below.
 
