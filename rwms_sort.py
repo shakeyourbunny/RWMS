@@ -55,6 +55,12 @@ wait_on_exit = RWMS.configuration.load_value("rwms", "waitforkeypress_on_exit", 
 disablesteam = RWMS.configuration.load_value("rwms", "disablesteam", True)
 dontremoveunknown = RWMS.configuration.load_value("rwms", "dontremoveunknown", False)
 
+
+def wait_for_exit(exit_code):
+    if wait_on_exit:
+        print("")
+        input("Press ENTER to end program.")
+
 # command line switches, override configuration file
 if args.disable_steam:
     disablesteam = True
@@ -64,10 +70,7 @@ if args.dont_remove_unknown_mods:
 
 if args.dump_configuration:
     RWMS.configuration.__dump_configuration()
-    if wait_on_exit:
-        print("")
-        input("Press ENTER to end program.")
-        sys.exit(0)
+    wait_for_exit(0)
 
 if updatecheck:
     if RWMS.update.is_update_available(VERSION):
@@ -94,7 +97,7 @@ mod_unknown = list()
 def cleanup_garbage_name(garbagename):
     clean = garbagename
     regex = re.compile(
-        "(v|V|)\d+\.\d+(\.\d+|)([a-z]|)|\[(1.0|(A|B)\d+)\]|\((1.0|(A|B)\d+)\)|(for |R|)(1.0|(A|B)\d+)|\.1(8|9)")
+        r"(v|V|)\d+\.\d+(\.\d+|)([a-z]|)|\[(1.0|(A|B)\d+)\]|\((1.0|(A|B)\d+)\)|(for |R|)(1.0|(A|B)\d+)|\.1(8|9)")
     clean = re.sub(regex, "", clean)
     clean = re.sub(regex, "", clean)
     clean = clean.replace(" - ", ": ").replace(" : ", ": ")
@@ -150,7 +153,7 @@ def load_mod_data(cats, db, basedir, modsource):
             try:
                 xml = ET.parse(aboutxml)
                 name = xml.find('name').text
-            except ET.ParseError as pe:
+            except ET.ParseError:
                 print("Mod ID is '{}'".format(moddirs))
                 print("** error: malformed XML in {}".format(aboutxml))
                 # print("Line {}, Offset {}".format(pe.lineno, pe.offset))
@@ -235,10 +238,7 @@ if args.contributors:
     for contributors in d:
         if contributors[1] >= 10:
             print("{:<30} {:>5}".format(contributors[0], contributors[1]))
-    if wait_on_exit:
-        print("")
-        input("Press ENTER to close the program.")
-    sys.exit(0)
+    wait_for_exit(0)
 else:
     contributors = collections.Counter(database["contributor"])
     print("Top contributors: ", end='')
@@ -284,23 +284,22 @@ mod_data_local = load_mod_data(cat, database, localmoddir, "L")
 mod_data_full = {**mod_data_local, **mod_data_workshop}
 
 mods_data_active = list()
+mods_data_active_unknown = list()
 for mods in mods_enabled_list:
     try:
         mods_data_active.append([mods, mod_data_full[mods][1]])
 
     except KeyError:
-        pass
         # print("Unknown mod ID {}, deactivating it from mod list.".format(mods))
+        print("Unknown ACTIVE mod ID {} found..".format(mods))
+        mods_data_active_unknown.append(mods)
+
 
 print("Sorting mods.")
 newlist = sorted(mods_data_active, key=itemgetter(1))
 print("")
 print("{} subscribed mods, {} ({} known, {} unknown) enabled mods".format(len(mod_data_full), len(mods_enabled_list),
                                                                           len(mods_data_active) + 1, len(mod_unknown)))
-# do backup
-now_time = time.strftime('%Y%m%d-%H%M', time.localtime(time.time()))
-shutil.copy(modsconfigfile, modsconfigfile + '.backup-{}'.format(now_time))
-
 if not os.path.isfile(modsconfigfile):
     RWMS.error.fatal_error("error accessing " + modsconfigfile, wait_on_error)
     sys.exit(1)
@@ -328,14 +327,15 @@ if args.reset_to_core:
     if data.lower() == "y":
         print("Resetting your ModsConfig.xml to Core only!")
 
+        # do backup
+        now_time = time.strftime('%Y%m%d-%H%M', time.localtime(time.time()))
+        shutil.copy(modsconfigfile, modsconfigfile + '.backup-{}'.format(now_time))
+
         xml_sorted = ET.SubElement(xml, 'li')
         xml_sorted.text = "Core"
 
         doc.write(modsconfigfile, encoding='UTF-8', xml_declaration='False')
-        if wait_on_exit:
-            print("")
-            input("Press ENTER to close the program.")
-        sys.exit(1)
+        wait_for_exit(1)
 
 for mods in newlist:
     # print(mods)
@@ -366,13 +366,16 @@ if mod_unknown:
 
     if dontremoveunknown:
         print("Adding in unknown mods in the load order (at the bottom).")
-        for mods in mod_unknown:
-            if mods[0] == "":
-                print("skipping, empty?")
-            else:
-                xml_sorted = ET.SubElement(xml, 'li')
-                xml_sorted.text = str(mods[1])
+        for mods in mods_data_active_unknown:
+            print("Adding {}.".format(mods))
+            # xml_sorted = ET.SubElement(xml, 'li')
+            # xml_sorted.text = str(mods)
 
+            xml_mod = ET.Element("li")
+            xml_mod.text = str(mods)
+
+            xml_activeMods = doc.find("activeMods")
+            xml_activeMods.append(xml_mod)
     unknown_diff = dict()
     for mods in mod_unknown:
         if not disablesteam:
@@ -382,6 +385,7 @@ if mod_unknown:
         unknown_diff[mods[0]] = ["not_categorized", workshop_url]
     DB["unknown"] = unknown_diff
 
+    now_time = time.strftime('%Y%m%d-%H%M', time.localtime(time.time()))
     unknownfile = "rwms_unknown_mods_{}.json.txt".format(now_time)
     print("Writing unknown mods.")
     print("")
@@ -430,12 +434,24 @@ else:
     write_modsconfig = True
 
 if write_modsconfig:
+    # do backup
+    now_time = time.strftime('%Y%m%d-%H%M', time.localtime(time.time()))
+    backupfile = modsconfigfile + ".backup-{}".format(now_time)
+    shutil.copy(modsconfigfile, backupfile)
+    print("Backed up ModsConfig.xml to {}.".format(backupfile))
+
     print("Writing new ModsConfig.xml.")
-    doc.write(modsconfigfile, encoding='UTF-8', xml_declaration='False')
+    # doc.write(modsconfigfile, encoding='UTF-8', xml_declaration='False')
+    modsconfigstr = ET.tostring(doc.getroot(), encoding='unicode')
+    with open(modsconfigfile, "w", encoding='UTF-8', newline="\n") as f:
+        # poor man's pretty print
+        f.write('<?xml version="1.0" encoding="utf-8"?>\n')
+        modsconfigstr = modsconfigstr.replace('</li><li>', '</li>\n    <li>').replace('</li></activeMods>',
+                                                                                      '</li>\n  </activeMods>')
+        f.write(modsconfigstr)
+    f.close()
     print("Writing done.")
 else:
     print("ModsConfig.xml was NOT modified.")
 
-if wait_on_exit:
-    print("")
-    input("Press ENTER to close the program.")
+wait_for_exit(0)
