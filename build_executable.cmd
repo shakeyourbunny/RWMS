@@ -4,6 +4,8 @@ rem you need PyInstaller for generating the executable.
 set version=
 set /P version=<VERSION
 
+set oldpwd=%cd%
+
 set builddir=.builds\%version%
 echo %builddir%
 
@@ -15,12 +17,18 @@ cd %builddir%
 where /q pyinstaller
 if errorlevel 1 goto no_pyinstaller
 
-set use_7zip=no
+where /q 7z
+if not errorlevel 1 (
+  set zipexec=7z a -tzip -mx9 -r
+  set zipexec_move=7z.exe a -tzip -mx9 -sdel
+  goto start
+)
 
-if exist "%PROGRAMFILES%\7-zip\7z.exe" set use_7zip=yes
-if "%use_7zip%" == "yes" set zipexec="%PROGRAMFILES%\7z.exe a -tzip -mx9 -r "
-if "%use_7zip%" == "yes" set zipexec_move="%PROGRAMFILES%\7z.exe a -tzip -mx9 -sdel "
-if "%use_7zip%" == "yes" goto start
+if exist "%PROGRAMFILES%\7-Zip\7z.exe" (
+  set zipexec="%PROGRAMFILES%\7-Zip\7z.exe" a -tzip -mx9 -r
+  set zipexec_move="%PROGRAMFILES%\7-Zip\7z.exe" a -tzip -mx9 -sdel
+  goto start
+)
 
 where /q zip
 if errorlevel 1 goto no_zip
@@ -57,4 +65,5 @@ if exist rwms_sort-%version%-win.zip del rwms_sort-%version%-win.zip
 goto byebye
 
 :byebye
+cd %oldpwd%
 pause
