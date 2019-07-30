@@ -24,7 +24,7 @@ import RWMS.update
 
 # ##################################################################################
 # some basic initialization
-VERSION = "0.94.8"
+VERSION = "0.94.9"
 
 twx, twy = shutil.get_terminal_size()
 

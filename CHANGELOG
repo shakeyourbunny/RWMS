@@ -1,4 +1,18 @@
 RWMS (RimWorldModSorter) changelog:
+0.94.9 (2019-07-30):
+bugfix release
+fixed:
+- show relative paths for local unknown mods in the unknown mods report
+- ensure unknown mod report and ModConfig.xml backup have the same timestamp in the name (in the very rare case that the minute changes during the script)
+
+internal code fixes:
+- use tuples instead of lists for fixed sized objects
+- move unknown mod handling in load_mod_data outside to avoid side effects in it
+- use os.path.join in another place
+- remove unnecessary file.close() after with statements, since the with statements guarantee it's already called
+
+Big thank you to Ibmaian!
+
 0.94.8 (2019-07-26):
 new:
 - build script for windows executable
@@ -16,6 +30,10 @@ fixed:
 - crash on empty ModsConfig.xml
 - several small internal cosmetic and lint fixes (thanks Ibmaian)
 - fix for older Python versions (thanks Rocketeer999)
+- unknown, ACTIVE mods are now not removed anymore (thanks Ibmaian), you can enable / disable this behaviour with
+  the dontremoveunknown switch in the configuration file, which already existed, but did not do the correct thing(tm).
+  Default is keeping them.
+
 
 0.94.7 (2019-06-30):
 changed:
