@@ -1,2 +1,2 @@
-python rwms_sort.py
-pause
+@echo off
+python "%~dp0rwms_sort.py"
