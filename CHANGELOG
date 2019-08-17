@@ -1,4 +1,21 @@
 RWMS (RimWorldModSorter) changelog:
+0.95.0 (2019-07-17):
+maintenance release, bugfixes
+new:
+- added custom parameters to shell scripts for passing through.
+- all values from the configuration file are available as command line switches
+  (except github username and password).
+
+changed:
+- re-added some delays to script for better readability of output, is configurable.
+- updated documentation to reflect changes.
+- RWMS now waits on errors (optionally if possible).
+- some internal code refactoring.
+
+fixed:
+- make shell scripts runnable from every directory (Ibmaian).
+- wait_on_error configuration value was mostly ignored.
+
 0.94.9 (2019-07-30):
 bugfix release
 fixed:
@@ -77,10 +94,10 @@ new:
 
 changed:
 - "contributors" command line option changed to "--contributors" (new parser)
-- small delays removed
+- small delays removed.
 
 fixed:
-- configuration directive "openbrowser_on_update" works now
+- configuration directive "openbrowser_on_update" works now.
 - minor XML fix, empty li-element removed in ModsConfig.xml
 
 
@@ -130,55 +147,55 @@ new:
 - added contribution breakdown with "contributors" command line argument.
 
 changed:
-- pretty up README.md
+- pretty up README.md.
 
 
 0.93.1 (2019-04-15):
 changed:
-- minor update, correct URLs and references from Gitlab to Github
+- minor update, correct URLs and references from Gitlab to Github.
 
 
 0.93 (2019-04-13):
 new:
-- added configurable keypress on error and exit
-- update version check (issue #5)
+- added configurable keypress on error and exit.
+- update version check (issue #5).
 
 changed:
-- added some slowdowns (issue #6)
+- added some slowdowns (issue #6).
 - project moved back to GitHub, it doesn't like JSON as extension...
 
 fixed:
-- configurable disabling steam check (fixes issue 4)
-- windows executable ignores configuration file (issue #7)
+- configurable disabling steam check (fixes issue 4).
+- windows executable ignores configuration file (issue #7).
 
 
 0.92 (2019-04-10):
 fixed:
-- fallback to steam workshop, if About.xml of mod has errors
+- fallback to steam workshop, if About.xml of mod has errors.
 
 
 0.91 (2019-04-09):
 new:
-- configuration file now overrides automatic detection
+- configuration file now overrides automatic detection.
 
 changed:
-- validation moved into main script
+- validation moved into main script.
 
 
 0.90 (2019-04-8):
 new:
-- first version with proper version numbering
-- new DB format
+- first version with proper version numbering.
+- new DB format.
 
 
 no particular versions:
 new:
 - initial commit, updates and fixes.
-- uses the traditional scoring system
+- uses the traditional scoring system.
 
 changed:
-- removed dead testing code which prevented running
+- removed dead testing code which prevented running.
 
 fixed:
-- fixed writing policy for ModsConfig.xml
-- added configuration file (is ignored, if values are autodetected)
+- fixed writing policy for ModsConfig.xml.
+- added configuration file (is ignored, if values are autodetected).

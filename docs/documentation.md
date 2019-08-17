@@ -52,13 +52,30 @@ Option | Description
 --- | ---
 --help | displays helps and valid command line arguments
 --disable-steam | force disable Steam checks
+--disable-tweaks | disable user tweaks
+--enable-delays | enables some delays for better reading of the output
 --dont-remove-unknown-mods | do not remove unknown mods
+--openbrowser | opens a web browser if an update is available
 --dump-configuration | dumps the current configuration and exits
+--dump-configuration-nowait | dumps the current configuration and explicitly do not wait (for scripting)
 --contributors | list all contributors to the script and the database who have contributed more than 10 mods
 --reset-to-core | reset ModsConfig.xml to just Core
+--steamdir directory | set steam installation directory (disables "disablesteam" too)
+--drmfreedir directory | set DRM free directory of RimWorld
+--configdir directory | set savegame /config directory of RimWorld
+--workshopdir directory | set Steam Workshop directory
+--localmodsdir directory | set local mods directory
 
 Note that the switches which are named identical to the configuration options override these, so the
 priority order of options is: **default settings - configuration file - command line arguments.**
+
+The directory options check if the directory exists and if they do not, RWMS will stop.
+
+Priority of configurion source is as follows in descending priority, a higher priority overrides the
+lower ones:
+- command line
+- configuration file
+- RWMS script defaults
 
 ## Usage
 
@@ -93,7 +110,8 @@ new (or changed) settings.
 ### Python 3.6+
 
 You need a Python 3.6+ installation on your computer. This script does not work with Python 2 or
-Python 3 distributions less then 3.6.
+Python 3 distributions less then 3.6. That means that you will have to have AT LEAST Python 3.6 in
+your system, higher revisions are fine.
 
 #### Windows
 Windows binary downloads are available for download on the Github release page.
@@ -138,8 +156,15 @@ The configuration file *rwms_config.ini* is only needed if the autodetection fai
 platforms than Windows / Steam). Just open the configuration in your favorite text editor (NOT
 Microsoft Word) and you can modify all paths there. 
 
+You can see what RWMS is thinking about your configuration with the command
+
+`rwms_sort.sh --dump-configuration`
+
 ### General options
 There are no default values, you have to fill them in for yourself.
+
+**Note: If you are using Steam (regardless of operating system) and you have RimWorld installed
+in the default library, you mostly don't need configure the directories.**
 
 entry | description
 --- | ---
@@ -172,6 +197,7 @@ entry | default value | description
 --- | --- | ---
 waitforkeypress_on_error | True | wait for a keypress / Enter after an error occurs.
 waitforkeypress_on_exit | True | wait for a keypress / Enter to exit the program.
+enabledelaysinoutput | True | enable some delays in output of script, for better reading.
 
 entry | default value | description
 --- | --- | ---

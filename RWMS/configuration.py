@@ -45,6 +45,7 @@ def load_value(section, entry, isBool=False):
         cfg.read(configfile)
     except:
         print("Error parsing configuration file {}.".format(configfile))
+        input("Press ENTER to end program.")
         sys.exit(1)
 
     try:
@@ -54,6 +55,7 @@ def load_value(section, entry, isBool=False):
             value = cfg.get(section, entry, raw=True)
     except:
         print("Error parsing entry '{}', section '{}' from configuration file '{}'".format(entry, section, configfile))
+        input("Press ENTER to end program.")
         sys.exit(1)
     return value
 
@@ -223,6 +225,7 @@ def __dump_configuration():
         print("Open Browser ....................: {}".format(load_value("rwms", "openbrowser")))
         print("Wait on Error ...................: {}".format(load_value("rwms", "waitforkeypress_on_error")))
         print("Wait on Exit ....................: {}".format(load_value("rwms", "waitforkeypress_on_exit")))
+        print("Enable delays in output .........: {}".format(load_value("rwms", "enabledelaysinoutput")))
         print("Disable Steam Checks ............: {}".format(load_value("rwms", "disablesteam")))
         print("Do not remove unknown mods ......: {}".format(load_value("rwms", "dontremoveunknown")))
         print("Tweaks are disabled .............: {}".format(load_value("rwms", "disabletweaks")))

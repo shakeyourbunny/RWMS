@@ -22,25 +22,33 @@ import RWMS.error
 import RWMS.issue_mgmt
 import RWMS.update
 
+
 # ##################################################################################
-# some basic initialization
-VERSION = "0.94.9"
+# helper functions
+def be_sleepy(howlong, ed=True):
+    if ed:
+        time.sleep(howlong)
+
+
+def wait_for_exit(exit_code, wfo=True):
+    if wfo:
+        print("")
+        input("Press ENTER to end program.")
+    sys.exit(exit_code)
+
+
+def check_directory(dir):
+    if not os.path.exists(dir):
+        print("** Directory '{}' does not exist or is not accessible.".format(dir))
+        return False
+    return True
+
+
+# ##################################################################################
+# some basic initialization and default output
+VERSION = "0.95.0"
 
 twx, twy = shutil.get_terminal_size()
-
-parser = ArgumentParser()
-
-# configuration overrides
-parser.add_argument("--disable-steam", action="store_true", help="force disable steam detection")
-parser.add_argument("--dont-remove-unknown-mods", action="store_true", help="do not remove unknown mods")
-
-# misc options
-parser.add_argument("--contributors", action="store_true", help="display all contributors to RWMS(DB)")
-parser.add_argument("--dump-configuration", action="store_true",
-                    help="displays the current configuration RWMS is thinking of")
-
-parser.add_argument("--reset-to-core", action="store_true", help="reset mod list to Core only")
-args = parser.parse_args()
 
 banner = "** RWMS {} by shakeyourbunny ".format(VERSION)
 print("{:*<{tw}}".format(banner, tw=twx))
@@ -48,31 +56,107 @@ print("bugs: https://github.com/shakeyourbunny/RWMS/issues")
 print("database updates: visit https://github.com/shakeyourbunny/RWMSDB/issues")
 print("")
 
+# ##################################################################################
+# command-line processing
+parser = ArgumentParser()
+
+# configuration overrides
+parser.add_argument("--disable-steam", action="store_true", help="(override) disable steam detection")
+parser.add_argument("--dont-remove-unknown-mods", action="store_true", help="(override) do not remove unknown mods")
+parser.add_argument("--openbrowser", action="store_true",
+                    help="(override) opens browser if new version available, implies force updatecheck ")
+parser.add_argument("--disable-tweaks", action="store_true", help="(override) disable user tweaks")
+
+# misc options
+parser.add_argument("--contributors", action="store_true", help="display contributors for RWMS(DB)")
+
+parser.add_argument("--dump-configuration", action="store_true",
+                    help="displays the current configuration RWMS is thinking of")
+parser.add_argument("--dump-configuration-nowait", action="store_true",
+                    help="displays the current configuration RWMS is thinking of, forces no waiting (for scripts)")
+
+parser.add_argument("--reset-to-core", action="store_true", help="reset mod list to Core only")
+
+# delay options
+parser.add_argument("--wait-error", action="store_true", help="(override) wait on errors")
+parser.add_argument("--wait", action="store_true", help="(override) wait on exit")
+parser.add_argument("--enable-delays", action="store_true", help="(override) enable some delays")
+
+# directory options
+parser.add_argument("--steamdir", action="store", help="(override) Steam installation directory")
+parser.add_argument("--drmfreedir", action="store", help="(override) DRM free directory of RimWorld")
+parser.add_argument("--configdir", action="store", help="(override) location of game configuration / save directory")
+parser.add_argument("--workshopdir", action="store", help="(override) location of Steam Workshop mod directory")
+parser.add_argument("--localmodsdir", action="store", help="(override) location of local mod directory")
+
+args = parser.parse_args()
+
 updatecheck = RWMS.configuration.load_value("rwms", "updatecheck", True)
 openbrowser = RWMS.configuration.load_value("rwms", "openbrowser", True)
 wait_on_error = RWMS.configuration.load_value("rwms", "waitforkeypress_on_error", True)
 wait_on_exit = RWMS.configuration.load_value("rwms", "waitforkeypress_on_exit", True)
 disablesteam = RWMS.configuration.load_value("rwms", "disablesteam", True)
 dontremoveunknown = RWMS.configuration.load_value("rwms", "dontremoveunknown", False)
+enabledelays = RWMS.configuration.load_value("rwms", "enabledelaysinoutput", True)
+disabletweaks = RWMS.configuration.load_value("rwms", "disabletweaks", True)
 
-
-def wait_for_exit(exit_code):
-    if wait_on_exit:
-        print("")
-        input("Press ENTER to end program.")
-    sys.exit(exit_code)
-
-# command line switches, override configuration file
+# process command line switches
+# configuration file overrides
 if args.disable_steam:
     disablesteam = True
 
 if args.dont_remove_unknown_mods:
     dontremoveunknown = True
 
+if args.openbrowser:
+    updatecheck = True
+    openbrowser = True
+
+if args.wait_error:
+    wait_on_error = True
+
+if args.wait:
+    wait_on_exit = True
+
+if args.enable_delays:
+    enabledelays = True
+
+if args.disable_tweaks:
+    disabletweaks = True
+
+# directory overrides
+if args.steamdir:
+    disablesteam = False
+    if not check_directory(args.steamdir):
+        wait_for_exit(1, wait_on_error)
+
+if args.drmfreedir:
+    if not check_directory(args.drmfreedir):
+        wait_on_exit(1, wait_on_error)
+
+if args.configdir:
+    if not check_directory(args.configdir):
+        wait_on_exit(1, wait_on_error)
+
+if args.workshopdir:
+    disablesteam = False
+    if not check_directory(args.workshopdir):
+        wait_on_exit(1, wait_on_error)
+
+if args.localmodsdir:
+    if not check_directory(args.localmodsdir):
+        wait_on_exit(1, wait_on_error)
+
+# configuration dump
 if args.dump_configuration:
     RWMS.configuration.__dump_configuration()
-    wait_for_exit(0)
+    wait_for_exit(0, wait_on_exit)
 
+if args.dump_configuration_nowait:
+    RWMS.configuration.__dump_configuration()
+    sys.exit(0)
+
+## start script
 if updatecheck:
     if RWMS.update.is_update_available(VERSION):
         print("*** Update available, new version is {} ***".format(RWMS.update.__load_version_from_repo()))
@@ -84,7 +168,7 @@ if updatecheck:
 
 if RWMS.configuration.detect_rimworld() == "":
     RWMS.error.fatal_error("no valid RimWorld installation detected!", wait_on_error)
-    sys.exit(1)
+    wait_for_exit(0, wait_on_error)
 
 categories_url = 'https://raw.githubusercontent.com/shakeyourbunny/RWMSDB/master/rwms_db_categories.json'
 database_url = "https://raw.githubusercontent.com/shakeyourbunny/RWMSDB/master/rwmsdb.json"
@@ -213,14 +297,14 @@ def load_mod_data(cats, db, basedir, modsource):
 cat = RWMS.database.load_categories_mapping(categories_url)
 if not cat:
     RWMS.error.fatal_error("Could not load properly categories.", wait_on_error)
-    sys.exit(1)
+    wait_for_exit(1, wait_on_error)
 
 # preload all needed data
 # categories
 database = RWMS.database.download_database(database_url)
 if not database:
     RWMS.error.fatal_error("Error loading scoring database {}.".format(database_url), wait_on_error)
-    sys.exit(1)
+    wait_for_exit(1, wait_on_error)
 else:
     print("")
     print("Database (v{}, date: {}) successfully loaded.".format(database["version"],
@@ -232,28 +316,31 @@ if args.contributors:
     print("{:<30} {:<6}".format('Contributor', '# Mods'))
     d = sorted(database["contributor"].items(), key=itemgetter(1), reverse=True)
     for contributors in d:
-        if contributors[1] >= 10:
+        if contributors[1] >= 20:
             print("{:<30} {:>5}".format(contributors[0], contributors[1]))
-    wait_for_exit(0)
+    print("\nfor a full list of contributors visit:")
+    print("https://github.com/shakeyourbunny/RWMSDB/blob/master/CONTRIBUTING.md")
+    wait_for_exit(0, wait_on_exit)
 else:
     contributors = collections.Counter(database["contributor"])
     print("Top contributors: ", end='')
     for c in contributors.most_common(5):
         print("{} ({}), ".format(c[0], c[1]), end='')
     print("")
+    wait_for_exit(0, wait_on_exit)
 
 modsconfigfile = RWMS.configuration.modsconfigfile()
 print("")
 print("Loading and parsing ModsConfig.xml")
 if not os.path.isfile(modsconfigfile):
     RWMS.error.fatal_error("could not find ModsConfig.xml; detected: '{}'".format(modsconfigfile), wait_on_error)
-    sys.exit(1)
+    wait_for_exit(1, wait_on_error)
 
 try:
     xml = ET.parse(modsconfigfile)
 except:
     RWMS.error.fatal_error("could not parse XML from ModsConfig.xml.", wait_on_error)
-    sys.exit(1)
+    wait_for_exit(1, wait_on_error)
 
 xml = xml.find('activeMods')
 mods_enabled_list = [t.text for t in xml.findall('li')]
@@ -272,7 +359,7 @@ if not disablesteam:
             RWMS.error.fatal_error(
                      "steam workshop directory '{}' could not be found. please check your installation and / or configuration file.".format(
                          steamworkshopdir), wait_on_error)
-            sys.exit(1)
+            wait_for_exit(1, wait_on_error)
         mod_data_workshop = load_mod_data(cat, database, steamworkshopdir, "W")
 
 localmoddir = RWMS.configuration.detect_localmods_dir()
@@ -280,7 +367,7 @@ if not os.path.isdir(localmoddir):
     RWMS.error.fatal_error(
              "local mod directory '{}' could not be found. please check your installation and / or configuration file.".format(
                  localmoddir), wait_on_error)
-    sys.exit(1)
+    wait_for_exit(1, wait_on_error)
 mod_data_local = load_mod_data(cat, database, localmoddir, "L")
 
 mod_data_full = {**mod_data_local, **mod_data_workshop}
@@ -304,10 +391,12 @@ for mods in mods_enabled_list:
         mods_unknown_active.append(mods)
 
 print("Sorting mods.")
+be_sleepy(1.0, enabledelays)
 newlist = sorted(mods_data_active, key=itemgetter(1))
 print("")
 print("{} subscribed mods, {} ({} known, {} unknown) enabled mods".format(len(mod_data_full), len(mods_enabled_list),
                                                                           len(mods_data_active) + 1, len(mods_unknown_active)))
+be_sleepy(2.0, enabledelays)
 
 if not os.path.isfile(modsconfigfile):
     RWMS.error.fatal_error("error accessing " + modsconfigfile, wait_on_error)
@@ -342,7 +431,6 @@ if args.reset_to_core:
         xml_sorted = ET.SubElement(xml, 'li')
         xml_sorted.text = "Core"
         write_modsconfig = True
-
 else:
     # handle known active mods
     for mods in newlist:
@@ -454,4 +542,4 @@ if write_modsconfig:
 else:
     print("ModsConfig.xml was NOT modified.")
 
-wait_for_exit(0)
+wait_for_exit(0, wait_on_exit)

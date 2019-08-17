@@ -1,4 +1,4 @@
-rem @echo off
+@echo off
 rem you need PyInstaller for generating the executable.
 
 set version=
@@ -17,7 +17,10 @@ cd %builddir%
 where /q pyinstaller
 if errorlevel 1 goto no_pyinstaller
 
-where /q 7z
+set zipexec=zip -j9
+set zipexec_move=zip -mj9
+
+where /q 7z.exe
 if not errorlevel 1 (
   set zipexec=7z a -tzip -mx9 -r
   set zipexec_move=7z.exe a -tzip -mx9 -sdel
@@ -30,12 +33,12 @@ if exist "%PROGRAMFILES%\7-Zip\7z.exe" (
   goto start
 )
 
-where /q zip
-if errorlevel 1 goto no_zip
-set zipexec=zip -j9
-set zipexec_move=zip -mj9
 
+
+set zipexec="%oldpwd%\zip" -j9
+set zipexec_move="%oldpwd%\zip" -mj9
 goto start
+
 :no_pyinstaller
 echo PyInstaller not found.
 echo.
@@ -65,5 +68,8 @@ if exist rwms_sort-%version%-win.zip del rwms_sort-%version%-win.zip
 goto byebye
 
 :byebye
+
+dir
+
 cd %oldpwd%
 pause
