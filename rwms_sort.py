@@ -46,7 +46,7 @@ def check_directory(dir):
 
 # ##################################################################################
 # some basic initialization and default output
-VERSION = "0.95.0"
+VERSION = "0.95.1"
 
 twx, twy = shutil.get_terminal_size()
 

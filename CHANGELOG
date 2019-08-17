@@ -1,5 +1,9 @@
 RWMS (RimWorldModSorter) changelog:
-0.95.0 (2019-07-17):
+0.95.1 (2019-08-17):
+fixed:
+- fix for the windows people, binary should do its thing now.
+
+0.95.0 (2019-08-17):
 maintenance release, bugfixes
 new:
 - added custom parameters to shell scripts for passing through.
