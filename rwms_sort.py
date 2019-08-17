@@ -327,7 +327,6 @@ else:
     for c in contributors.most_common(5):
         print("{} ({}), ".format(c[0], c[1]), end='')
     print("")
-    wait_for_exit(0, wait_on_exit)
 
 modsconfigfile = RWMS.configuration.modsconfigfile()
 print("")
