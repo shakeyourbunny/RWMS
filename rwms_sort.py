@@ -44,6 +44,29 @@ def check_directory(dir):
     return True
 
 
+def print_dry_run(config_file, final_doc, mod_data):
+    print("This is a dry run, nothing will be changed\n")
+    initial = [x.text for x in ET.parse(config_file).getroot().find('activeMods').findall('li')]
+    final = [x.text for x in final_doc.getroot().find('activeMods').findall('li')]
+    for i, mod in enumerate(initial):
+        initial_pos = i + 1
+        name = mod_data[mod][2]
+        try:
+            final_pos = final.index(mod) + 1
+
+            if initial_pos == final_pos:
+                print(f"{name} retained the same position at {initial_pos}")
+            else:
+                print(f"{name} moved from position {initial_pos} to position {final_pos}")
+        except ValueError:
+            print(f"{name} was eliminated from the resulting active mods")
+
+    print("\n\nResultant order is: ")
+    for i, mod in enumerate(final):
+        name = mod_data[mod][2]
+        print(f"{i + 1} - {name} - {mod}")
+
+
 # ##################################################################################
 # some basic initialization and default output
 VERSION = "0.95.1"
@@ -68,6 +91,8 @@ parser.add_argument("--openbrowser", action="store_true",
 parser.add_argument("--disable-tweaks", action="store_true", help="(override) disable user tweaks")
 
 # misc options
+parser.add_argument("-d", "--dry-run", action="store_true", help="shows what would change, does not actually overrides "
+                                                                "any file")
 parser.add_argument("--contributors", action="store_true", help="display contributors for RWMS(DB)")
 
 parser.add_argument("--dump-configuration", action="store_true",
@@ -515,8 +540,12 @@ else:
     else:
         print("lucky, no unknown mods detected!")
 
+    if args.dry_run:
+        print_dry_run(modsconfigfile, doc, mod_data_full)
+        write_modsconfig = False
+
     # ask for confirmation to write the ModsConfig.xml anyway
-    while True:
+    while True and not args.dry_run:
         data = input("Do you REALLY want to write ModsConfig.xml (y/n): ")
         if data.lower() in ('y', 'n'):
             break
