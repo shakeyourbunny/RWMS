@@ -65,6 +65,7 @@ Option | Description
 --configdir directory | set savegame /config directory of RimWorld
 --workshopdir directory | set Steam Workshop directory
 --localmodsdir directory | set local mods directory
+--dry-run | Print the changes which are going to take place before actually doing them
 
 Note that the switches which are named identical to the configuration options override these, so the
 priority order of options is: **default settings - configuration file - command line arguments.**
